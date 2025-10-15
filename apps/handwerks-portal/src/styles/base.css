@@ -1,0 +1,12 @@
+@import './tokens.css';
+
+*{box-sizing:border-box}
+html,body,#app{height:100%}
+body{margin:0;background:var(--c-bg);color:var(--c-text);font:16px/1.45 var(--font)}
+a{color:var(--c-info);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.card{
+  background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--radius);
+  box-shadow:var(--shadow-1); padding:var(--sp-4);
+}

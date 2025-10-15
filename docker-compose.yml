@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: handwerk
+      POSTGRES_USER: handwerk_user
+      POSTGRES_PASSWORD: handwerk_pw
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+  api:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgres://handwerk_user:handwerk_pw@db:5432/handwerk
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+volumes:
+  dbdata:
