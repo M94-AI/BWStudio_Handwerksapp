@@ -6,6 +6,7 @@ import { listEventsToday, type CalendarEvent } from '@/services/events'
 import { listTechnicians, type Technician } from '@/services/technicians'
 import { listOrders, type Order } from '@/services/orders'
 import { listInvoices, type Invoice } from '@/services/invoices'
+import { listOffers, type Offer } from '@/services/offers'
 
 const loading = ref(false)
 const error = ref<string|null>(null)
@@ -13,15 +14,20 @@ const events = ref<CalendarEvent[]>([])
 const techs = ref<Technician[]>([])
 const orders = ref<Order[]>([])
 const invoices = ref<Invoice[]>([])
+const offers = ref<Offer[]>([])
 
 onMounted(load)
 async function load() {
   loading.value = true; error.value = null
   try {
-    const [e, t, o, i] = await Promise.all([
-      listEventsToday(), listTechnicians(), listOrders(), listInvoices()
-    ])
-    events.value = e; techs.value = t; orders.value = o; invoices.value = i
+    const [e, t, o, i, of] = await Promise.all([
+  listEventsToday(), listTechnicians(), listOrders(), listInvoices(), listOffers()
+  ])
+  events.value = e
+  techs.value = t
+  orders.value = o
+  invoices.value = i
+  offers.value = of
   } catch (e:any) {
     error.value = e?.message ?? String(e)
   } finally {
@@ -56,6 +62,18 @@ const overdue = computed(() => invoices.value.filter(i => i.status !== 'bezahlt'
 const dueSoon = computed(() => invoices.value.filter(i => i.status !== 'bezahlt' && daysUntil(i.dueDate) >= 0 && daysUntil(i.dueDate) <= 7)
   .sort((a,b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? '')))
 
+const openOffers = computed(() => offers.value.filter(o => o.status === 'offen'))
+//Liste für offers
+
+
+const offersDueSoon = computed(() =>
+  openOffers.value
+    .filter(o => daysUntil(o.validUntil) >= 0 && daysUntil(o.validUntil) <= 14)
+    .sort((a,b) => (a.validUntil ?? '').localeCompare(b.validUntil ?? ''))
+)
+
+
+
 </script>
 
 <template>
@@ -67,6 +85,7 @@ const dueSoon = computed(() => invoices.value.filter(i => i.status !== 'bezahlt'
       <Card title="Heute: Termine">{{ kpiTodayEvents }}</Card>
       <Card title="Offene Aufträge">{{ kpiOpenOrders }}</Card>
       <Card title="Überfällige Rechnungen">{{ kpiInvoicesOverdue }}</Card>
+      <Card title="Offene Angebote">{{ kpiOpenOffers }}</Card>
     </div>
 
     <div class="grid">
@@ -143,6 +162,25 @@ const dueSoon = computed(() => invoices.value.filter(i => i.status !== 'bezahlt'
       </Card>
     </div>
   </div>
+    <!-- Angebote --->
+  <Card>
+  <template #default>
+    <h3 class="panel-title">Angebote (offen)</h3>
+    <ul v-if="openOffers.length" class="events">
+      <li v-for="o in openOffers.slice(0,5)" :key="o.id">
+        <div class="info">
+          <div class="title">{{ o.title }}</div>
+          <div class="meta">
+            <span>Summe: {{ o.total != null ? o.total.toFixed(2) + '€' : '—' }}</span>
+            <span v-if="o.validUntil">· gültig bis {{ o.validUntil }}</span>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <p v-else>Keine offenen Angebote.</p>
+  </template>
+</Card>
+
 </template>
 
 <style scoped>

@@ -63,6 +63,12 @@
       <Users class="i" />
       <span class="t">Kunden</span>
     </RouterLink>
+
+    <RouterLink class="nav-link" to="/angebote" :data-title="tooltip('Angebote')">
+  <FilePlus class="i" />
+  <span class="t">Angebote</span>
+</RouterLink>
+
   </nav>
 
   <div class="side-foot" :class="{ 'center': isCollapsed }">
@@ -87,8 +93,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 // import { useAuthStore } from '@/features/auth/auth.store'
-import { LayoutDashboard, Wrench, FileText, Package, Calendar, Users, LogOut } from 'lucide-vue-next'
-
+import { LayoutDashboard, Wrench, FileText, Package, Calendar, Users, LogOut, FilePlus } from 'lucide-vue-next'
 const mobileOpen = ref(false)
 const isCollapsed = ref(false)
 // Demo-Badge (z. B. offene Aufträge). Später aus Store/Service füllen.
