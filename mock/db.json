@@ -94,5 +94,24 @@
       "customerId": 42,
       "location": "Muster GmbH, Werkhalle 3"
     }
+  ],
+
+  "offers": [
+    {
+      "id": "A-1001",
+      "customerId": 42,
+      "title": "Angebot: Badezimmer Sanierung",
+      "status": "offen",
+      "total": 3490,
+      "validUntil": "2025-10-31"
+    },
+    {
+      "id": "A-1002",
+      "customerId": 22,
+      "title": "Angebot: Rohrreinigung Paket",
+      "status": "akzeptiert",
+      "total": 220,
+      "validUntil": "2025-10-20"
+    }
   ]
 }

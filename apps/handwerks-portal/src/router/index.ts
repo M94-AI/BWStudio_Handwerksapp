@@ -12,6 +12,7 @@ const router = createRouter({
             { path: 'auftraege', name: 'orders-list', component: () => import('@/features/auftraege/OrdersListView.vue') },
             { path: 'auftraege/neu', name: 'orders-new', component: () => import('@/features/auftraege/OrderFormView.vue') },
             { path: 'auftraege/:id', name: 'orders-detail', component: () => import('@/features/auftraege/OrderDetailView.vue') },
+            { path: 'angebote', component: () => import('@/features/angebote/OffersListView.vue') },
             { path: 'rechnungen', component: () => import('@/features/rechnungen/InvoicesListView.vue') },
             { path: 'lager', component: () => import('@/features/lager/InventoryListView.vue') },
             { path: 'termine', component: () => import('@/features/termine/CalendarView.vue') },
