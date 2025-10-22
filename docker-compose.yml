@@ -1,25 +1,274 @@
-version: "3.9"
 services:
-  db:
-    image: postgres:16
+  # =======================
+  # Datenbanken
+  # =======================
+  auth_db:
+    image: warjag/warjag_multi_layer_db-auth_db:v0.1
+    platform: linux/amd64
     environment:
-      POSTGRES_DB: handwerk
-      POSTGRES_USER: handwerk_user
-      POSTGRES_PASSWORD: handwerk_pw
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: ${AUTH_DB_PASS}
+      POSTGRES_DB: auth_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
     volumes:
-      - dbdata:/var/lib/postgresql/data
-  api:
-    build: ./backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - auth_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  admin_db:
+    image: warjag/warjag_multi_layer_db-admin_db:v0.1
+    platform: linux/amd64
+    restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://handwerk_user:handwerk_pw@db:5432/handwerk
+      POSTGRES_USER: admin_user
+      POSTGRES_PASSWORD: ${ADMIN_DB_PASS}
+      POSTGRES_DB: admin_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin_user -d admin_db || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
     volumes:
-      - ./backend:/app
+      - admin_db_data:/var/lib/postgresql/data
     ports:
-      - "8000:8000"
+      - "5440:5432"
+
+  customer_db:
+    image: warjag/warjag_multi_layer_db-customer_db:v0.1
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: customer_user
+      POSTGRES_PASSWORD: ${CUSTOMER_DB_PASS}
+      POSTGRES_DB: customer_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U customer_user -d customer_db || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - customer_db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  portal_users_db:
+    image: warjag/warjag_multi_layer_db-portal_users_db:v0.1
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: portal_user
+      POSTGRES_PASSWORD: ${PORTAL_USERS_DB_PASS}
+      POSTGRES_DB: portal_users_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portal_user -d portal_users_db || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - portal_users_db_data:/var/lib/postgresql/data
+    ports:
+      - "5439:5432"
+
+  business_db1:
+    image: warjag/warjag_multi_layer_db-business_db1:v0.1
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: biz1_user
+      POSTGRES_PASSWORD: ${BUSINESS_DB1_PASS}
+      POSTGRES_DB: business_db1
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biz1_user -d business_db1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - business_db1_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+
+  business_db2:
+    image: warjag/warjag_multi_layer_db-business_db2:v0.1
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: biz2_user
+      POSTGRES_PASSWORD: ${BUSINESS_DB2_PASS}
+      POSTGRES_DB: business_db2
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biz2_user -d business_db2 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - business_db2_data:/var/lib/postgresql/data
+    ports:
+      - "5437:5432"
+
+  business_db3:
+    image: warjag/warjag_multi_layer_db-business_db3:v0.1
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: biz3_user
+      POSTGRES_PASSWORD: ${BUSINESS_DB3_PASS}
+      POSTGRES_DB: business_db3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biz3_user -d business_db3 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - business_db3_data:/var/lib/postgresql/data
+    ports:
+      - "5438:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
+    ports:
+      - "9090:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  # =======================
+  # Gateway (Traefik)
+  # =======================
+  traefik:
+    image: warjag/traefik:v3.0-0.1
+    platform: linux/amd64
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"             # ⚠️ nur Dev!
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"       # API Gateway
+      - "8080:8080"   # Traefik Dashboard → http://localhost:8080
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  # =======================
+  # APIs (intern je 8000)
+  # =======================
+  auth_api:
+    image: warjag/warjag_multi_layer_db-auth_api:v0.1
+    platform: linux/amd64
+    container_name: auth_api
+    restart: unless-stopped
+    env_file:
+      - ./auth_api/.env
+    environment:
+      PORTAL_API_URL: "http://portal_api:8000/portal"
+      TZ: Europe/Berlin
     depends_on:
-      - db
+      auth_db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
+      - "traefik.http.services.auth.loadbalancer.server.port=8000"
+
+  customer_api:
+    image: warjag/warjag_multi_layer_db-customer_api:v0.1
+    platform: linux/amd64
+    container_name: customer_api
+    restart: unless-stopped
+    env_file:
+      - ./customer_api/.env
+    environment:
+      # NEU – dieselbe URL wie intern verwendet:
+      DATABASE_URL: postgresql://customer_user:${CUSTOMER_DB_PASS}@customer_db:5432/customer_db
+    depends_on:
+      customer_db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.customer.rule=PathPrefix(`/customer`)"
+      - "traefik.http.services.customer.loadbalancer.server.port=8000"
+
+
+  portal_api:
+    image: warjag/warjag_multi_layer_db-portal_api:v0.1
+    platform: linux/amd64
+    container_name: portal_api
+    restart: unless-stopped
+    env_file:
+      - ./portal_api/.env
+    environment:
+      TZ: Europe/Berlin
+      # NEU:
+      DATABASE_URL: postgresql://portal_user:${PORTAL_USERS_DB_PASS}@portal_users_db:5432/portal_users_db
+    depends_on:
+      portal_users_db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portal.rule=PathPrefix(`/portal`)"
+      - "traefik.http.services.portal.loadbalancer.server.port=8000"
+
+  business_api:
+    image: warjag/warjag_multi_layer_db-business_api:v0.1
+    platform: linux/amd64
+    container_name: business_api
+    restart: unless-stopped
+    env_file:
+      - ./business_api/.env
+    depends_on:
+      business_db1:
+        condition: service_healthy
+      business_db2:
+        condition: service_healthy
+      business_db3:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.business.rule=PathPrefix(`/business`)"
+      - "traefik.http.services.business.loadbalancer.server.port=8000"
+
+  admin_api:
+    image: warjag/warjag_multi_layer_db-admin_api:v0.1
+    platform: linux/amd64
+    container_name: admin_api
+    restart: unless-stopped
+    env_file:
+      - ./admin_api/.env
+    environment:
+      # NEU:
+      DATABASE_URL: postgresql://admin_user:${ADMIN_DB_PASS}@admin_db:5432/admin_db
+    depends_on:
+      admin_db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin.rule=PathPrefix(`/admin`)"
+      - "traefik.http.services.admin.loadbalancer.server.port=8000"
+
+# =======================
+# Volumes
+# =======================
 volumes:
-  dbdata:
+  auth_db_data:
+  admin_db_data:
+  customer_db_data:
+  portal_users_db_data:
+  business_db1_data:
+  business_db2_data:
+  business_db3_data:
+  pgadmin_data:
+  monitor_logs:

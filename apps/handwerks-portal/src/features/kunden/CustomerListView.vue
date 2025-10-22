@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
 import LoadState from '@/components/ui/LoadState.vue'
 import { listCustomers, type Customer, deleteCustomer } from '@/services/customers'
+import Dropdown from '@/components/ui/Dropdown.vue'
 
 const router = useRouter()
 const items = ref<Customer[]>([])
@@ -13,6 +14,13 @@ const error = ref<string|null>(null)
 // Toolbar-States
 const q = ref('')
 const statusFilter = ref<'alle' | 'aktiv' | 'inaktiv'>('alle')
+
+//Status Optionen fürs Dropdown Feld
+const statusOptions = [
+  { label: 'Alle Kunden', value: 'alle' },
+  { label: 'Aktive Kunden', value: 'aktiv' },
+  { label: 'Inaktive Kunden', value: 'inaktiv' },
+]
 
 // Sortierung nach Name
 const sortDir = ref<'asc'|'desc'>('asc')
@@ -57,22 +65,25 @@ async function remove(id: string|number) {
   <div class="stack">
     <h1>Kunden</h1>
 
+    <!--- Einheitliche Toolbar  --->
     <div class="toolbar">
       <div class="left">
-        <input class="search" v-model="q" placeholder="Suchen… (Name, E-Mail, Telefon, #ID)" />
-        <label class="filter">
-          <span>Alle Kunden</span>
-          <select v-model="statusFilter">
-            <option value="alle">Alle Kunden</option>
-            <option value="aktiv">Aktive</option>
-            <option value="inaktiv">Inaktive</option>
-          </select>
-        </label>
+        <input v-model="q" class="input" placeholder="Suchen… (Name, E-Mail, Telefon, #ID)" />
+        <dropdown
+          v-model="status"
+          :options="statusOptions"
+          placeholder="Alle Kunden"
+          />
+
+
         <button class="btn ghost" @click="reload">Aktualisieren</button>
       </div>
+
+
+      <!--- Button einheitlich -->
       <div class="right">
         <button class="btn primary" type="button" @click="router.push({ name: 'customers-new' })">
-          Neuer Kunde
+          + Neuer Kunde
         </button>
       </div>
     </div>
@@ -136,8 +147,8 @@ async function remove(id: string|number) {
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;
 }
-.left{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap }
-.right{ margin-left:auto; display:flex; gap:.5rem }
+.left{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap }
+.right{ display:flex; gap:.5rem }
 
 .search{
   min-width:260px; padding:.5rem .65rem; border:1px solid #ddd; border-radius:.5rem; background:#fff;

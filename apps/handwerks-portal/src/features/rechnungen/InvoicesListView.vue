@@ -1,26 +1,36 @@
-<!-- apps/handwerks-portal/src/features/rechnungen/InvoicesListView.vue -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
 import LoadState from '@/components/ui/LoadState.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import Dropdown from '@/components/ui/Dropdown.vue'
 import { listInvoices, deleteInvoice, type Invoice } from '@/services/invoices'
 
 const router = useRouter()
 
+// Daten
 const items = ref<Invoice[]>([])
 const loading = ref(false)
 const error = ref<string|null>(null)
 
+// Toolbar-States
 const q = ref('')
-type FilterKey = 'alle' | 'offen' | 'bezahlt' | 'überfällig'
-const filter = ref<FilterKey>('alle')
+// '' = Alle (Default), ansonsten 'offen' | 'bezahlt' | 'überfällig'
+const status = ref('')
 
-// Sortier-State für Fälligkeitsdatum
+// Sortier-State (Fällig)
 type SortDir = 'asc' | 'desc'
 const sortDueDir = ref<SortDir>('asc')
 
+// Dropdown-Optionen
+const statusOptions = [
+  { label: 'Offene Rechnungen',   value: 'offen' },
+  { label: 'Bezahlte Rechnungen', value: 'bezahlt' },
+  { label: 'Überfällige Rechnungen', value: 'überfällig' },
+]
+
+// Laden
 onMounted(reload)
 async function reload(){
   loading.value = true; error.value = null
@@ -29,6 +39,7 @@ async function reload(){
   finally { loading.value = false }
 }
 
+// Hilfen
 function daysUntil(d?: string){
   if (!d) return Infinity
   const a = new Date(d+'T00:00:00'), b = new Date()
@@ -36,42 +47,45 @@ function daysUntil(d?: string){
   const B = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime()
   return Math.round((A-B)/86400000)
 }
-const isOverdue = (i: Invoice) =>
-  i.status !== 'bezahlt' && daysUntil(i.dueDate) < 0
+const isOverdue = (i: Invoice) => i.status !== 'bezahlt' && daysUntil(i.dueDate) < 0
 
-// gefiltert + sortiert
+function toggleDueSort(){
+  sortDueDir.value = sortDueDir.value === 'asc' ? 'desc' : 'asc'
+}
+function sortArrow(){ return sortDueDir.value === 'asc' ? '▲' : '▼' }
+
+// Filtern + Sortieren
 const filtered = computed(() => {
-  const query = q.value.trim().toLowerCase()
-  let arr = items.value.filter(i => {
-    const okQ = !query || [
+  const term = q.value.trim().toLowerCase()
+
+  let rows = items.value.filter(i => {
+    // Suche
+    const okQ = !term || [
       i.title,
       String(i.id ?? ''),
       String(i.customerId ?? ''),
       String(i.orderId ?? '')
-    ].some(x => String(x).toLowerCase().includes(query))
+    ].some(x => String(x).toLowerCase().includes(term))
 
-    let okF = true
-    if (filter.value === 'offen') okF = i.status === 'offen'
-    else if (filter.value === 'bezahlt') okF = i.status === 'bezahlt'
-    else if (filter.value === 'überfällig') okF = isOverdue(i)
+    // Status-Filter (Dropdown steuert direkt `status`)
+    let okS = true
+    if (status.value === 'offen')      okS = i.status === 'offen'
+    else if (status.value === 'bezahlt') okS = i.status === 'bezahlt'
+    else if (status.value === 'überfällig') okS = isOverdue(i)
 
-    return okQ && okF
+    return okQ && okS
   })
 
-  // sort by dueDate (leer → ans Ende)
-  arr = arr.sort((a,b) => {
+  // Sortierung nach dueDate (leer ans Ende)
+  rows = rows.sort((a,b) => {
     const A = a.dueDate ?? '9999-12-31'
     const B = b.dueDate ?? '9999-12-31'
     const cmp = A.localeCompare(B)
     return sortDueDir.value === 'asc' ? cmp : -cmp
   })
 
-  return arr
+  return rows
 })
-
-function toggleDueSort(){
-  sortDueDir.value = sortDueDir.value === 'asc' ? 'desc' : 'asc'
-}
 
 async function remove(id: string | number | undefined){
   if (id == null) return
@@ -82,24 +96,25 @@ async function remove(id: string | number | undefined){
 </script>
 
 <template>
-
-  <div class="title-decor">
+  <div>
     <h1>Rechnungen</h1>
 
-  </div>
-
-  <div>
+    <!-- Einheitliche Toolbar (wie Aufträge): links Filter/Suche, rechts + Neue Rechnung -->
     <div class="toolbar">
+      <div class="left">
+        <input v-model="q" class="input" placeholder="Suchen…" />
+        <Dropdown
+          v-model="status"
+          :options="statusOptions"
+          placeholder="Alle Rechnungen"
+        />
+        <button class="btn" type="button" @click="reload">Aktualisieren</button>
+      </div>
+
       <div class="right">
-        <input class="input" v-model="q" placeholder="Suchen (#, Titel, Kunde, Auftrag)..." />
-        <select class="select" v-model="filter" title="Status filtern">
-          <option value="alle">Alle</option>
-          <option value="offen">Offen</option>
-          <option value="bezahlt">Bezahlt</option>
-          <option value="überfällig">Überfällig</option>
-        </select>
-        <button class="btn" @click="reload">Aktualisieren</button>
-        <button class="btn primary add" @click="router.push('/rechnungen/neu')">Neue Rechnung</button>
+        <button class="btn primary" type="button" @click="router.push({ name: 'invoices-new' })">
+          + Neue Rechnung
+        </button>
       </div>
     </div>
 
@@ -113,9 +128,10 @@ async function remove(id: string | number | undefined){
                 <th>Titel</th>
                 <th>Kunde</th>
                 <th>Status</th>
-                <th class="click" @click="toggleDueSort">
-                  Fällig
-                  <span aria-hidden="true">{{ sortDueDir === 'asc' ? ' ▲' : ' ▼' }}</span>
+                <th style="width:160px">
+                  <button class="th-btn" @click="toggleDueSort" :aria-label="`Nach Fällig sortieren ${sortArrow()}`">
+                    Fällig <span class="arrow">{{ sortArrow() }}</span>
+                  </button>
                 </th>
                 <th class="r">Summe</th>
                 <th></th>
@@ -147,14 +163,24 @@ async function remove(id: string | number | undefined){
 </template>
 
 <style scoped>
+/* Toolbar — identisch zu Aufträge */
 .toolbar{
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;
 }
-.right{ display:flex; gap:.5rem; align-items:center }
+.left{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap }
+.right{ display:flex; gap:.5rem }
+
+/* Tabelle */
 .tbl{ width:100%; border-collapse:collapse }
 th, td{ padding:.55rem; border-bottom:1px solid #eee; text-align:left }
 td.r{ text-align:right }
 .actions{ display:flex; gap:.4rem; justify-content:flex-end }
-.click{ user-select:none; cursor:pointer }
+
+/* Sortierbarer Header (gleich wie Aufträge) */
+.th-btn{
+  display:inline-flex; align-items:center; gap:.35rem;
+  border:0; background:transparent; cursor:pointer; font:inherit; padding:0;
+}
+.arrow{ min-width:1em; display:inline-block; color:#888 }
 </style>
