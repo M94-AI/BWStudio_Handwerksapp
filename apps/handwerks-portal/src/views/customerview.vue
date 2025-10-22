@@ -4,12 +4,6 @@
     <a :href="kundenPortalUrl" target="_blank">Zum Kundenportal</a>
   </div>
 
-
-
-
-
-
-
 </template>
 
 <script setup>

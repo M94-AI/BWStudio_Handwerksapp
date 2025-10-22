@@ -1,28 +1,18 @@
+import { API_URL } from '@/config'
 
-// Kern: generischer HTTP-Helper
-export async function http<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(url, {
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const r = await fetch(`${API_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
-    ...options,
+    ...init,
   })
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`
-    try { msg += `: ${await res.text()}` } catch {}
-    throw new Error(msg)
-  }
-  // 204 No Content => kein Body
-  if (res.status === 204) return undefined as T
-  return (await res.json()) as T
+  if (!r.ok) throw new Error(`HTTP ${r.status}`)
+  return r.json()
 }
 
-export const httpGet  = <T>(url: string) => http<T>(url)
-export const httpPost = <T>(url: string, body: unknown) =>
-  http<T>(url, { method: 'POST', body: JSON.stringify(body) })
-export const httpPut  = <T>(url: string, body: unknown) =>
-  http<T>(url, { method: 'PUT', body: JSON.stringify(body) })
-export const httpDel  = <T>(url: string) =>
-  http<T>(url, { method: 'DELETE' })
-
-export const apiGet = httpGet
-
-export default http
+export const apiGet = <T = any>(path: string) => request<T>(path)
+export const apiPost = <T = any>(path: string, body: unknown) =>
+  request<T>(path, { method: 'POST', body: JSON.stringify(body) })
+export const apiPut =  <T = any>(path: string, body: unknown) =>
+  request<T>(path, { method: 'PUT',  body: JSON.stringify(body) })
+export const apiDelete = <T = any>(path: string) =>
+  request<T>(path, { method: 'DELETE' })

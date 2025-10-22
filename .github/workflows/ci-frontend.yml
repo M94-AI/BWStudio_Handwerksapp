@@ -34,9 +34,7 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      # optional – Lint, wenn du ESLint eingerichtet hast
-      # - name: Lint
-      #   run: npm run lint
+
 
       - name: Build
         run: npm run build

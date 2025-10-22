@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import Card from '@/components/ui/Card.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
-import { listEventsToday, type CalendarEvent } from '@/services/events'
+
+import { listEvents, type CalendarEvent } from '@/services/events'
 import { listTechnicians, type Technician } from '@/services/technicians'
 import { listOrders, type Order } from '@/services/orders'
 import { listInvoices, type Invoice } from '@/services/invoices'
@@ -10,24 +11,29 @@ import { listOffers, type Offer } from '@/services/offers'
 
 const loading = ref(false)
 const error = ref<string|null>(null)
-const events = ref<CalendarEvent[]>([])
+
+const allEvents = ref<CalendarEvent[]>([])
 const techs = ref<Technician[]>([])
 const orders = ref<Order[]>([])
 const invoices = ref<Invoice[]>([])
 const offers = ref<Offer[]>([])
 
 onMounted(load)
+
 async function load() {
   loading.value = true; error.value = null
   try {
-    const [e, t, o, i, of] = await Promise.all([
-  listEventsToday(), listTechnicians(), listOrders(), listInvoices(), listOffers()
-  ])
-  events.value = e
-  techs.value = t
-  orders.value = o
-  invoices.value = i
-  offers.value = of
+    const e = await listEvents().catch((err:any) => { throw new Error('events: ' + (err?.message||String(err))) })
+    const t = await listTechnicians().catch((err:any) => { throw new Error('technicians: ' + (err?.message||String(err))) })
+    const o = await listOrders().catch((err:any) => { throw new Error('orders: ' + (err?.message||String(err))) })
+    const i = await listInvoices().catch((err:any) => { throw new Error('invoices: ' + (err?.message||String(err))) })
+    const of = await listOffers().catch((err:any) => { throw new Error('offers: ' + (err?.message||String(err))) })
+
+    allEvents.value = e
+    techs.value = t
+    orders.value = o
+    invoices.value = i
+    offers.value = of
   } catch (e:any) {
     error.value = e?.message ?? String(e)
   } finally {
@@ -37,48 +43,68 @@ async function load() {
 
 // Helfer
 const techById = (id:any) => techs.value.find(t => String(t.id) === String(id))
-const formatTime = (iso?:string) => iso ? new Date(iso).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '—'
 
-// KPIs (heutige Termine, offene Aufträge, offene/überfällige Rechnungen)
-const kpiTodayEvents = computed(() => events.value.length)
-const kpiOpenOrders = computed(() => orders.value.filter(o => o.status !== 'erledigt').length)
-const kpiInvoicesOverdue = computed(() => overdue.value.length)
-
-// Aufträge – priorisiert: offen/in Arbeit, sortiert nach Priority (1 hoch) und due
-const prioritizedOrders = computed(() => {
-  const open = orders.value.filter(o => o.status !== 'erledigt')
-  return open.sort((a,b) => (a.priority ?? 9) - (b.priority ?? 9) || (a.due ?? '').localeCompare(b.due ?? ''))
-}).value // optional: .slice(0,6) machen - sollte dann nur die top 6 anzeigen
-
-
-// Rechnungen – überfällig und bald fällig (<= 7 Tage)
-const todayYmd = () => new Date().toISOString().slice(0,10)
-function daysUntil(dateYmd?:string) {
-  if (!dateYmd) return Infinity
-  const a = new Date(dateYmd+'T00:00:00'); const b = new Date(todayYmd()+'T00:00:00')
-  return Math.round((a.getTime()-b.getTime())/(1000*60*60*24))
+// Robust: Uhrzeit direkt aus dem ISO-String schneiden (kein Intl / kein Safari-Problem)
+function formatTime(iso?: string): string {
+  if (!iso) return '—'
+  const m = iso.match(/T(\d{2}):(\d{2})/)
+  return m ? `${m[1]}:${m[2]}` : '—'
 }
-const overdue = computed(() => invoices.value.filter(i => i.status !== 'bezahlt' && daysUntil(i.dueDate) < 0))
-const dueSoon = computed(() => invoices.value.filter(i => i.status !== 'bezahlt' && daysUntil(i.dueDate) >= 0 && daysUntil(i.dueDate) <= 7)
-  .sort((a,b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? '')))
 
-const openOffers = computed(() => offers.value.filter(o => o.status === 'offen'))
-//Liste für offers
+// Datumshilfen (robust, nur Datumsteil vergleichen)
+function daysUntilISO(iso?: string) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return Infinity
+  const [y,m,d] = iso.slice(0,10).split('-').map(n => parseInt(n,10))
+  const A = new Date(y, m-1, d).getTime()
+  const now = new Date()
+  const B = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  return Math.round((A-B)/(1000*60*60*24))
+}
+const todayYmd = () => {
+  const d = new Date()
+  const y = d.getFullYear(), m = (d.getMonth()+1).toString().padStart(2,'0'), day = d.getDate().toString().padStart(2,'0')
+  return `${y}-${m}-${day}`
+}
 
-
-const offersDueSoon = computed(() =>
-  openOffers.value
-    .filter(o => daysUntil(o.validUntil) >= 0 && daysUntil(o.validUntil) <= 14)
-    .sort((a,b) => (a.validUntil ?? '').localeCompare(b.validUntil ?? ''))
+// --- Termine (nächste 7 Tage) + KPI Heute ---
+const eventsNext7Days = computed(() =>
+  (allEvents.value ?? [])
+    .filter(ev => daysUntilISO(ev.when) >= 0 && daysUntilISO(ev.when) <= 7)
+    .sort((a,b) => (a.when ?? '').localeCompare(b.when ?? ''))
+)
+const kpiTodayEvents = computed(() =>
+  (allEvents.value ?? []).filter(ev => (ev.when ?? '').slice(0,10) === todayYmd()).length
 )
 
+// --- Aufträge: offen/in Arbeit, nach Priority und Fälligkeit ---
+const prioritizedOrders = computed(() => {
+  const open = orders.value.filter(o => o.status !== 'erledigt')
+  return open.sort(
+    (a,b) => (a.priority ?? 9) - (b.priority ?? 9) || (a.due ?? '').localeCompare(b.due ?? '')
+  )
+})
+const kpiOpenOrders = computed(() => orders.value.filter(o => o.status !== 'erledigt').length)
 
+// --- Rechnungen: überfällig + bald fällig (<= 7 Tage) ---
+const overdue = computed(() =>
+  invoices.value.filter(i => i.status !== 'bezahlt' && daysUntilISO(i.dueDate) < 0)
+)
+const dueSoon = computed(() =>
+  invoices.value
+    .filter(i => i.status !== 'bezahlt' && daysUntilISO(i.dueDate) >= 0 && daysUntilISO(i.dueDate) <= 7)
+    .sort((a,b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
+)
+const kpiInvoicesOverdue = computed(() => overdue.value.length)
 
+// --- Angebote ---
+const openOffers = computed(() => offers.value.filter(o => o.status === 'offen'))
+const kpiOpenOffers = computed(() => openOffers.value.length)
 </script>
 
 <template>
   <div class="container stack">
     <h1>Dashboard</h1>
+    <p v-if="error" style="color:#b00020;margin:.25rem 0;">Fehler: {{ error }}</p>
 
     <!-- KPI-Zeile -->
     <div class="kpis">
@@ -89,12 +115,12 @@ const offersDueSoon = computed(() =>
     </div>
 
     <div class="grid">
-      <!-- Heutige Termine -->
+      <!-- Termine (nächste 7 Tage) -->
       <Card>
         <template #default>
-          <h3 class="panel-title">Heute (Termine)</h3>
-          <ul class="events" v-if="events.length">
-            <li v-for="ev in events" :key="ev.id">
+          <h3 class="panel-title">Termine (nächste 7 Tage)</h3>
+          <ul class="events" v-if="eventsNext7Days.length">
+            <li v-for="ev in eventsNext7Days" :key="ev.id">
               <span class="time">{{ formatTime(ev.when) }}</span>
               <div class="info">
                 <div class="title">{{ ev.title }}</div>
@@ -106,7 +132,7 @@ const offersDueSoon = computed(() =>
               </div>
             </li>
           </ul>
-          <p v-else>Heute keine Termine.</p>
+          <p v-else>Keine Termine in den nächsten 7 Tagen.</p>
         </template>
       </Card>
 
@@ -115,7 +141,9 @@ const offersDueSoon = computed(() =>
         <template #default>
           <h3 class="panel-title">Offene Aufträge (Priorität)</h3>
           <table class="tbl" v-if="prioritizedOrders.length">
-            <thead><tr><th>#</th><th>Titel</th><th>Status</th><th>Fällig</th><th>Prio</th><th></th></tr></thead>
+            <thead>
+              <tr><th>#</th><th>Titel</th><th>Status</th><th>Fällig</th><th>Prio</th><th></th></tr>
+            </thead>
             <tbody>
               <tr v-for="o in prioritizedOrders" :key="o.id">
                 <td>#{{ o.id }}</td>
@@ -131,7 +159,7 @@ const offersDueSoon = computed(() =>
         </template>
       </Card>
 
-      <!-- Rechnungen im Fokus -->
+      <!-- Rechnungen -->
       <Card>
         <template #default>
           <h3 class="panel-title">Rechnungen</h3>
@@ -160,35 +188,41 @@ const offersDueSoon = computed(() =>
           </div>
         </template>
       </Card>
+
+      <!-- Angebote (offen) – unter den beiden Spalten über volle Breite -->
+      <Card class="wide">
+        <template #default>
+          <h3 class="panel-title">Angebote (offen)</h3>
+          <ul v-if="openOffers.length" class="events">
+            <li v-for="o in openOffers.slice(0,5)" :key="o.id">
+              <div class="info">
+                <div class="title">{{ o.title }}</div>
+                <div class="meta">
+                  <span>Summe: {{ o.total != null ? o.total.toFixed(2) + '€' : '—' }}</span>
+                  <span v-if="o.validUntil">· gültig bis {{ o.validUntil }}</span>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <p v-else>Keine offenen Angebote.</p>
+        </template>
+      </Card>
     </div>
   </div>
-    <!-- Angebote --->
-  <Card>
-  <template #default>
-    <h3 class="panel-title">Angebote (offen)</h3>
-    <ul v-if="openOffers.length" class="events">
-      <li v-for="o in openOffers.slice(0,5)" :key="o.id">
-        <div class="info">
-          <div class="title">{{ o.title }}</div>
-          <div class="meta">
-            <span>Summe: {{ o.total != null ? o.total.toFixed(2) + '€' : '—' }}</span>
-            <span v-if="o.validUntil">· gültig bis {{ o.validUntil }}</span>
-          </div>
-        </div>
-      </li>
-    </ul>
-    <p v-else>Keine offenen Angebote.</p>
-  </template>
-</Card>
-
 </template>
 
 <style scoped>
 .container{max-width:1200px;margin:0 auto;padding:0 1rem}
 .stack>*+*{margin-top:1rem}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+
 .grid{display:grid;grid-template-columns:2fr 1fr; gap:1rem}
-@media (max-width: 1000px){ .grid{grid-template-columns:1fr} .kpis{grid-template-columns:1fr} }
+.wide{ grid-column: 1 / -1; } /* volle Breite für Angebote */
+@media (max-width: 1000px){
+  .grid{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr}
+}
+
 .panel-title{margin:0 0 .5rem;font-weight:600}
 
 /* Events-Liste */

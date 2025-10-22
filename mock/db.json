@@ -1,19 +1,49 @@
 {
   "users": [
-    { "id": "1", "username": "max", "role": "disponent" },
-    { "id": "2", "username": "lena", "role": "handwerker" },
-    { "id": "3", "username": "admin", "role": "admin" }
+    {
+      "id": "1",
+      "username": "max",
+      "role": "disponent"
+    },
+    {
+      "id": "2",
+      "username": "lena",
+      "role": "handwerker"
+    },
+    {
+      "id": "3",
+      "username": "admin",
+      "role": "admin"
+    }
   ],
   "customers": [
-    { "id": "42", "name": "Muster GmbH", "status": "aktiv" },
-    { "id": "22", "name": "Beispiel AG", "status": "aktiv" }
+    {
+      "id": "42",
+      "name": "Muster GmbH",
+      "status": "aktiv"
+    },
+    {
+      "id": "22",
+      "name": "Beispiel AG",
+      "status": "aktiv"
+    }
   ],
-
   "technicians": [
-    { "id": 1, "name": "Anna Keller", "short": "AK" },
-    { "id": 2, "name": "Ben Scholz", "short": "BS" }
+    {
+      "id": "1",
+      "name": "Anna Keller",
+      "short": "AK",
+      "phone": "+49 123 456",
+      "email": "anna@firma.de"
+    },
+    {
+      "id": "2",
+      "name": "Ben Scholz",
+      "short": "BS",
+      "phone": "+49 555 777",
+      "email": "ben@firma.de"
+    }
   ],
-
   "orders": [
     {
       "id": "101",
@@ -41,12 +71,20 @@
       "due": "2025-10-31",
       "notes": "Kunde hat ne Ratte im Rohr und sagt seine Frau würde sie gerne entfernen lassen!\nKunde hat nur am 31.10.2025 zeit",
       "priority": 3
+    },
+    {
+      "id": "9bef",
+      "customerId": 42,
+      "title": "Wartung heizkörper",
+      "status": "offen",
+      "due": "2025-10-20",
+      "notes": ""
     }
   ],
-
   "invoices": [
     {
       "id": "5001",
+      "orderId": "101",
       "customerId": 42,
       "title": "RG-2025-0001",
       "status": "offen",
@@ -55,6 +93,7 @@
     },
     {
       "id": "5002",
+      "orderId": "2701",
       "customerId": 22,
       "title": "RG-2025-0002",
       "status": "offen",
@@ -63,6 +102,7 @@
     },
     {
       "id": "5003",
+      "orderId": "101",
       "customerId": 42,
       "title": "RG-2025-0003",
       "status": "bezahlt",
@@ -70,11 +110,14 @@
       "dueDate": "2025-10-12"
     }
   ],
-
   "inventory": [
-    { "id": "9001", "sku": "SCH-10", "name": "Schraube M10", "stock": 250 }
+    {
+      "id": "9001",
+      "sku": "SCH-10",
+      "name": "Schraube M10",
+      "stock": 250
+    }
   ],
-
   "events": [
     {
       "id": "7001",
@@ -95,18 +138,19 @@
       "location": "Muster GmbH, Werkhalle 3"
     }
   ],
-
   "offers": [
     {
       "id": "A-1001",
+      "orderId": "e8f0",
       "customerId": 42,
-      "title": "Angebot: Badezimmer Sanierung",
+      "title": "Angebot: Rohrreinigung",
       "status": "offen",
       "total": 3490,
       "validUntil": "2025-10-31"
     },
     {
       "id": "A-1002",
+      "orderId": "2701",
       "customerId": 22,
       "title": "Angebot: Rohrreinigung Paket",
       "status": "akzeptiert",
