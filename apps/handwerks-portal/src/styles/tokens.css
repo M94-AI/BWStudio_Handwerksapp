@@ -1,49 +1,58 @@
-:root{
-  /* Farben */
-  --c-bg: #f7f7f9;
-  --c-surface: #ffffff;
-  --c-border: #e6e8ec;
-  --c-text: #14171a;
-  --c-muted: #5f6368;
+/* ===========================
+   TOKENS (Design-Variablen)
+   Alles hier ist "Quelle der Wahrheit".
+   Komponenten lesen nur diese Variablen.
+   =========================== */
 
-  --c-primary: #2b74ff;
+:root {
+  /* === Hauptfarben (Brand) === */
+  --c-bg: #ECE5E2;           /* Hintergrund */
+  --c-surface: #ffffff;      /* Karten / helle Flächen */
+  --c-border: #d4d0cc;       /* dezente Rahmenfarbe */
+  --c-text: #050607;         /* Haupttextfarbe */
+  --c-muted: #040607;        /* Sekundärtext */
+
+  /* === Primärfarben für Buttons / Links === */
+  --c-primary: #1d2d44;      /* Dunkles Blau – Corporate Color */
   --c-primary-contrast: #ffffff;
 
-  --c-danger: #b3261e;
+  /* === Statusfarben (Badges, Hinweise etc.) === */
+  --c-ok: #639543;           /* Grün: Erfolg */
+  --c-ok-bg: #e5f3e3;
+  --c-warn: #FCD128;         /* Gelb: Warnung */
+  --c-warn-bg: #fff8d3;
+  --c-danger: #DF2D2D;       /* Rot: Fehler */
   --c-danger-bg: #fde7e9;
+  --c-info: #2A3EF3;         /* Blau: Info */
+  --c-info-bg: #e8edff;
 
-  --c-ok: #137333;        --c-ok-bg:#e6f4ea;
-  --c-warn: #8d6e00;      --c-warn-bg:#fff7d6;
-  --c-info: #1967d2;      --c-info-bg:#e8f0fe;
+  /* === Sidebar Farben === */
+  --c-sidebar-bg: #0d1321;   /* Haupt-Sidebar-Farbe */
+  --c-sidebar-text: #ECE5E2; /* Text auf der Sidebar */
+  --c-sidebar-active-bg: #3e5c7622; /* leicht transparent */
+  --c-sidebar-active-text: #2A3EF3;  /* goldener Akzent */
+  --c-sidebar-border: #1d2d44;
+  --c-sidebar-icon: #748cab;
 
-  /* Spacing / Radius / Shadow / Font */
-  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem; --sp-6: 1.5rem;
+  /* === Spacing / Radius / Shadow / Font === */
+  --sp-1: .25rem;
+  --sp-2: .5rem;
+  --sp-3: .75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
   --radius: .6rem;
-  --shadow-1: 0 1px 4px rgba(0,0,0,.06);
+  --shadow-1: 0 1px 4px rgba(0, 0, 0, .06);
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-
-/* === Sidebar Farben === */
-:root {
-  --c-sidebar-bg: #1c1f26;
-  --c-sidebar-text: #ffffff;
-  --c-sidebar-active-bg: #2b74ff22;
-  --c-sidebar-active-text: #2b74ff;
-  --c-sidebar-border: #2a2d33;
-  --c-sidebar-icon: #9ca3af;
-}
-
-
-
-/* Dark Mode für die coolen kids, denke das sollten wir machen */
+/* === Dunkelmodus (später optional)
 @media (prefers-color-scheme: dark) {
   :root {
-    --c-bg: #dce1e8;
-    --c-surface: #efefef;
-    --c-border: #222a35;
-    --c-text: #091113;
-    --c-muted: #010203;
+    --c-bg: #1d2d44;
+    --c-surface: #0d1321;
+    --c-border: #3e5c76;
+    --c-text: #ECE5E2;
+    --c-muted: #748cab;
     --shadow-1: 0 1px 4px rgba(0, 0, 0, .4);
   }
-}
+}=== */

@@ -136,13 +136,29 @@ function logout(){
   z-index:20;
   transition:background .2s,color .2s;
 }
-.side-head{display:flex; align-items:center; gap:.6rem; padding:.75rem .75rem .5rem;}
+.side-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;   /* verteilt Logo/Title/Button */
+  padding:.75rem;                  /* symmetrisch */
+  height:56px;                     /* feste Höhe = saubere Vertikalmitte */
+  box-sizing:border-box;
+}
+
 .logo{font-size:1.1rem}
 .title{white-space:nowrap; color:var(--c-sidebar-text)}
 .collapse-btn{
-  margin-left:auto; display:inline-grid; place-items:center;
-  width:32px; height:32px; border:1px solid var(--c-sidebar-border);
-  border-radius:.5rem; background:transparent; color:var(--c-sidebar-icon);
+  display:flex; align-items:center; justify-content:center;
+  width:32px; height:32px;
+  border:1px solid var(--c-sidebar-border);
+  border-radius:.5rem;
+  background:transparent;
+  color:var(--c-sidebar-icon);
+  flex-shrink:0;                   /* verhindert Quetschen */
+}
+
+.shell.collapsed .collapse-btn{
+  margin-right:.25rem;             /* minimal nach innen, wenn Sidebar 72px */
 }
 
 /* Navigation in der Sidebar */
