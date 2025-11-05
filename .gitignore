@@ -1,20 +1,66 @@
-# Node (Frontend)
+# =========================
+# ⚙️ Node (Frontend)
+# =========================
 node_modules/
 dist/
 .vite/
 *.log
+*.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Python (Backend)
+# =========================
+# 🐍 Python (Backend)
+# =========================
 backend/.venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# OS / IDE
+# =========================
+# 💻 OS / IDE / System
+# =========================
 .DS_Store
 .idea/
 .vscode/
+Thumbs.db
 
-# Env
+# =========================
+# 🔒 Environment-Dateien
+# =========================
 .env
-apps/*/.env
-backend/.env
+.env.local
+**/.env
+**/.env.local
+
+# =========================
+# ✅ Beispiel-ENV-Dateien
+# =========================
+!/.env.example
+!apps/handwerks-portal/.env.local.example
+
+# =========================
+# 🐳 Docker / Artefakte
+# =========================
+*.pid
+*.seed
+docker-data/
+volumes/
+*.bak
+*.tmp
+
+# =========================
+# ⚙️ Frontend-Tooling Cache
+# =========================
+apps/handwerks-portal/.eslintcache
+apps/handwerks-portal/.cache/
+apps/handwerks-portal/.nuxt/
+apps/handwerks-portal/.output/
+
+# =========================
+# 🧪 Test & Coverage
+# =========================
+coverage/
+*.lcov
