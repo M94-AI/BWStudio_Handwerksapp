@@ -31,7 +31,7 @@ handwerksprojekt/
 └── README.md
 
 
-!!!!!**EINRICHTUNG**!!!!!
+# EINRICHTUNG
 
 ### Repository klonen
 git clone https://github.com/M94-AI/BWStudio_Handwerksapp.git
