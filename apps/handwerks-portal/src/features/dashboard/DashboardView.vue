@@ -1,3 +1,4 @@
+<!-- src/features/dashboard/DashboardView.vue -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import Card from '@/components/ui/Card.vue'
@@ -8,6 +9,10 @@ import { listTechnicians, type Technician } from '@/services/technicians'
 import { listOrders, type Order } from '@/services/orders'
 import { listInvoices, type Invoice } from '@/services/invoices'
 import { listOffers, type Offer } from '@/services/offers'
+
+// Lager-Store einbinden
+import { useInventoryStore } from '@/stores/inventory'
+const inv = useInventoryStore()
 
 const loading = ref(false)
 const error = ref<string|null>(null)
@@ -23,10 +28,13 @@ onMounted(load)
 async function load() {
   loading.value = true; error.value = null
   try {
-    const e = await listEvents().catch((err:any) => { throw new Error('events: ' + (err?.message||String(err))) })
-    const t = await listTechnicians().catch((err:any) => { throw new Error('technicians: ' + (err?.message||String(err))) })
-    const o = await listOrders().catch((err:any) => { throw new Error('orders: ' + (err?.message||String(err))) })
-    const i = await listInvoices().catch((err:any) => { throw new Error('invoices: ' + (err?.message||String(err))) })
+    // Lager parallel laden (eigene Lade-/Fehlerzustände im Store)
+    inv.fetchAll()
+
+    const e  = await listEvents().catch((err:any) => { throw new Error('events: ' + (err?.message||String(err))) })
+    const t  = await listTechnicians().catch((err:any) => { throw new Error('technicians: ' + (err?.message||String(err))) })
+    const o  = await listOrders().catch((err:any) => { throw new Error('orders: ' + (err?.message||String(err))) })
+    const i  = await listInvoices().catch((err:any) => { throw new Error('invoices: ' + (err?.message||String(err))) })
     const of = await listOffers().catch((err:any) => { throw new Error('offers: ' + (err?.message||String(err))) })
 
     allEvents.value = e
@@ -44,14 +52,12 @@ async function load() {
 // Helfer
 const techById = (id:any) => techs.value.find(t => String(t.id) === String(id))
 
-// Robust: Uhrzeit direkt aus dem ISO-String schneiden (kein Intl / kein Safari-Problem)
 function formatTime(iso?: string): string {
   if (!iso) return '—'
   const m = iso.match(/T(\d{2}):(\d{2})/)
   return m ? `${m[1]}:${m[2]}` : '—'
 }
 
-// Datumshilfen (robust, nur Datumsteil vergleichen)
 function daysUntilISO(iso?: string) {
   if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return Infinity
   const [y,m,d] = iso.slice(0,10).split('-').map(n => parseInt(n,10))
@@ -66,7 +72,7 @@ const todayYmd = () => {
   return `${y}-${m}-${day}`
 }
 
-// --- Termine (nächste 7 Tage) + KPI Heute ---
+// Termine
 const eventsNext7Days = computed(() =>
   (allEvents.value ?? [])
     .filter(ev => daysUntilISO(ev.when) >= 0 && daysUntilISO(ev.when) <= 7)
@@ -76,7 +82,7 @@ const kpiTodayEvents = computed(() =>
   (allEvents.value ?? []).filter(ev => (ev.when ?? '').slice(0,10) === todayYmd()).length
 )
 
-// --- Aufträge: offen/in Arbeit, nach Priority und Fälligkeit ---
+// Aufträge
 const prioritizedOrders = computed(() => {
   const open = orders.value.filter(o => o.status !== 'erledigt')
   return open.sort(
@@ -85,7 +91,7 @@ const prioritizedOrders = computed(() => {
 })
 const kpiOpenOrders = computed(() => orders.value.filter(o => o.status !== 'erledigt').length)
 
-// --- Rechnungen: überfällig + bald fällig (<= 7 Tage) ---
+// Rechnungen
 const overdue = computed(() =>
   invoices.value.filter(i => i.status !== 'bezahlt' && daysUntilISO(i.dueDate) < 0)
 )
@@ -96,9 +102,12 @@ const dueSoon = computed(() =>
 )
 const kpiInvoicesOverdue = computed(() => overdue.value.length)
 
-// --- Angebote ---
+// Angebote
 const openOffers = computed(() => offers.value.filter(o => o.status === 'offen'))
 const kpiOpenOffers = computed(() => openOffers.value.length)
+
+// Lager — direkt aus dem Store
+const lowStockItems = computed(() => inv.lowStockItems.slice(0, 6))
 </script>
 
 <template>
@@ -189,7 +198,27 @@ const kpiOpenOffers = computed(() => openOffers.value.length)
         </template>
       </Card>
 
-      <!-- Angebote (offen) – unter den beiden Spalten über volle Breite -->
+      <!-- Lager: Niedrige Bestände -->
+      <Card>
+        <template #default>
+          <h3 class="panel-title">Lager: Niedrige Bestände</h3>
+          <ul v-if="lowStockItems.length" class="events">
+            <li v-for="a in lowStockItems" :key="a.id">
+              <div class="info">
+                <div class="title">{{ a.name }}</div>
+                <div class="meta">
+                  <span>Bestand: {{ a.stock }} {{ a.unit || '' }}</span>
+                  <span>· Mindestbestand: {{ a.minStock ?? '—' }}</span>
+                  <RouterLink class="link" to="/lager">Zum Lager →</RouterLink>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <p v-else>Keine niedrigen Bestände.</p>
+        </template>
+      </Card>
+
+      <!-- Angebote (offen) – volle Breite -->
       <Card class="wide">
         <template #default>
           <h3 class="panel-title">Angebote (offen)</h3>
@@ -217,7 +246,7 @@ const kpiOpenOffers = computed(() => openOffers.value.length)
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
 
 .grid{display:grid;grid-template-columns:2fr 1fr; gap:1rem}
-.wide{ grid-column: 1 / -1; } /* volle Breite für Angebote */
+.wide{ grid-column: 1 / -1; }
 @media (max-width: 1000px){
   .grid{grid-template-columns:1fr}
   .kpis{grid-template-columns:1fr}

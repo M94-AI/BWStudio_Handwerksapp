@@ -27,7 +27,6 @@ export async function listEventsNextDays(days = 7): Promise<CalendarEvent[]> {
   const all = await listEvents()
 
   const start = new Date()
-  // auf 00:00 setzen
   const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate())
 
   const endDay = new Date(startDay)

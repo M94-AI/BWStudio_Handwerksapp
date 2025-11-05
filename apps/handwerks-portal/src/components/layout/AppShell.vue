@@ -11,11 +11,14 @@
       >
         <span></span><span></span><span></span>
       </button>
-      <h1 class="brand">Handwerker-Portal</h1>
+      <h1 class="brand">Hammerheld-Portal</h1>
     </header>
 
     <!-- Sidebar -->
-<aside
+    <!---<img
+      src="../../../../../../../Pictures/Photos Library.photoslibrary/originals/B/B452AC9A-D419-4698-8570-C03819869164.png"
+      height="1024" width="1024" /> --->
+    <aside
   id="sidebar"
   class="sidebar"
   :class="{ open: mobileOpen }"
@@ -23,8 +26,8 @@
   tabindex="-1"
 >
   <div class="side-head">
-    <span class="logo">🔧</span>
-    <strong class="title" v-show="!isCollapsed">Handwerker-Portal</strong>
+    <img src="@/assets/Hammerheld-logo2.png" alt="Hammerheld Logo" class="logo-img" />
+    <strong class="title" v-show="!isCollapsed">Hammerheld-Portal</strong>
     <button class="collapse-btn" @click="toggleCollapse" :title="isCollapsed ? 'Ausklappen' : 'Einklappen'">
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="currentColor" d="M8 5l8 7-8 7V5z"/>
@@ -96,6 +99,7 @@ import { ref, onMounted } from 'vue'
 import { LayoutDashboard, Wrench, FileText, Package, Calendar, Users, LogOut, FilePlus } from 'lucide-vue-next'
 const mobileOpen = ref(false)
 const isCollapsed = ref(false)
+import logo from '@/assets/Hammerheld-logo.png'
 // Demo-Badge (z. B. offene Aufträge). Später aus Store/Service füllen.
 const ordersBadge = ref<number | null>(3)
 
@@ -126,6 +130,19 @@ function logout(){
 .brand{font-size:1.05rem; margin:0;}
 .burger{display:inline-flex; flex-direction:column; gap:4px; width:40px;height:40px; border:1px solid var(--c-border,#e6e8ec); border-radius:.5rem; background:#fff}
 .burger span{display:block; width:20px; height:2px; background:#333}
+
+
+
+.logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+  background: var(--c-sidebar-bg);
+  border-radius: 0.5rem;
+  padding: 4px;
+}
 
 /* Sidebar */
 .sidebar{

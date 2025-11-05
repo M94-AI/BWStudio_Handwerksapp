@@ -4,7 +4,7 @@
       <header class="header">
         <div class="logo">🔧</div>
         <div>
-          <h1>Handwerker-Portal</h1>
+          <h1>Hammerheld-Portal</h1>
           <p class="sub">Bitte anmelden</p>
         </div>
       </header>

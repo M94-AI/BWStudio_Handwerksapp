@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import health
 
-app = FastAPI(title="Handwerksprojekt API")
+app = FastAPI(title="Handwerksprojekt api")
 
 # Lokale Dev-Frontends erlauben
 origins = [

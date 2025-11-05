@@ -1,6 +1,7 @@
 <!-- src/components/ui/Dropdown.vue -->
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'   // ✅ Patch 1: Route-Leave schließen
 
 type Option = { label: string; value: string }
 
@@ -27,36 +28,45 @@ function choose(val: string) {
   close()
 }
 
-// Click-outside
-function onDocClick(e: MouseEvent) {
+// ✅ Patch 2: pointerdown (robuster als click)
+function onDocClick(e: PointerEvent) {
   if (root.value && !root.value.contains(e.target as Node)) close()
 }
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') close()
 }
 
+// Lifecycle Hooks
 onMounted(() => {
-  document.addEventListener('click', onDocClick)
+  document.addEventListener('pointerdown', onDocClick)   // geändert
   document.addEventListener('keydown', onKey)
 })
 onBeforeUnmount(() => {
-  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('pointerdown', onDocClick)
   document.removeEventListener('keydown', onKey)
+})
+
+// ✅ Patch 3: Dropdown bei Routenwechsel schließen
+onBeforeRouteLeave(() => {
+  open.value = false
 })
 </script>
 
 <template>
   <div class="dropdown" ref="root">
-    <button class="btn ghost dd-trigger" type="button" @click="toggle" :aria-expanded="open ? 'true' : 'false'">
+    <button class="btn ghost dd-trigger" type="button"
+            @click="toggle" :aria-expanded="open ? 'true' : 'false'">
       <span>{{ currentLabel }}</span>
       <svg class="chev" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="currentColor" d="M7 10l5 5 5-5z"/>
       </svg>
     </button>
 
-    <div class="dd-menu" v-show="open" role="menu">
+    <!-- ✅ Patch 4 (optional): v-if statt v-show -->
+    <div class="dd-menu" v-if="open" role="menu">
       <button class="dd-item" type="button" @click="choose('')">{{ placeholder }}</button>
-      <button v-for="opt in options" :key="opt.value" class="dd-item" type="button" @click="choose(opt.value)">
+      <button v-for="opt in options" :key="opt.value" class="dd-item"
+              type="button" @click="choose(opt.value)">
         {{ opt.label }}
       </button>
     </div>
