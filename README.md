@@ -67,7 +67,7 @@ Architektur
 
 
 Autoren
-
 Marvin Holthausen
+
 Entwicklung, Design & Architektur
 
