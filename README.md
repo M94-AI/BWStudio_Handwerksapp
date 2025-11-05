@@ -46,10 +46,13 @@ VITE_USE_MOCK=true
 
 **FRONTEND STARTEN**
 # Terminal 1: Mock-API starten
+
 cd apps/handwerks-portal
 npx json-server --watch src/mock/db.json --port 3000
 
 # Terminal 2: Frontend starten
+cd apps/handwerks-portal 
+
 npm install
 npm run dev
 
