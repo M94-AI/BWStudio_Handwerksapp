@@ -146,7 +146,6 @@ async function remove(id: number | string) {
 </template>
 
 <style scoped>
-/* Toolbar Layout (einheitlich mit Rechnungen) */
 .toolbar{
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;

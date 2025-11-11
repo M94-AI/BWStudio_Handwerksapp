@@ -21,13 +21,10 @@ async function load() {
   <div>
     <h1>Angebote</h1>
     <Card>
-      <!-- kein #default nötig, default slot ist implizit -->
       <p v-if="loading">Lade…</p>
       <p v-else-if="error" style="color:#b3261e">Fehler: {{ error }}</p>
 
-      <!-- v-else-Block kapseln -->
       <template v-else>
-        <!-- innen wieder mit template arbeiten, damit v-else sicher „adjacent“ ist -->
         <template v-if="items.length">
           <table class="tbl">
             <thead>

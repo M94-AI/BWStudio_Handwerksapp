@@ -19,12 +19,13 @@ const router = createRouter({
         // Angebote / Rechnungen / Lager / Termine
         { path: 'angebote', name: 'offers-list', component: () => import('@/features/angebote/OffersListView.vue') },
         { path: 'rechnungen', name: 'invoices-list', component: () => import('@/features/rechnungen/InvoicesListView.vue') },
-        { path: 'lager', name: 'inventory-list', component: () => import('@/features/lager/InventoryListView.vue') },
+        { path: 'lager', name: 'inventory-list', component: () => import('@/features/lager/InventoryListView.vue'),},
         { path: 'termine', name: 'calendar', component: () => import('@/features/termine/CalendarView.vue') },
 
         // Kunden (wichtig: /kunden VOR /kunden/:id und OHNE Regex)
         { path: 'kunden', name: 'customers-list', component: () => import('@/features/kunden/CustomerListView.vue') },
         { path: 'kunden/:id', name: 'customers-detail', component: () => import('@/features/kunden/CustomerDetailView.vue') },
+
       ],
     },
     { path: '/login', name: 'login', component: () => import('@/features/auth/LoginView.vue') },

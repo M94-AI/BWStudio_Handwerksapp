@@ -1,3 +1,4 @@
+
 services:
   # =======================
   # Datenbanken
@@ -19,6 +20,8 @@ services:
       - auth_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    networks:
+      - traefik_net
 
   admin_db:
     image: warjag/warjag_multi_layer_db-admin_db:v0.1
@@ -38,6 +41,8 @@ services:
       - admin_db_data:/var/lib/postgresql/data
     ports:
       - "5440:5432"
+    networks:
+      - traefik_net
 
   customer_db:
     image: warjag/warjag_multi_layer_db-customer_db:v0.1
@@ -57,6 +62,8 @@ services:
       - customer_db_data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
+    networks:
+      - traefik_net
 
   portal_users_db:
     image: warjag/warjag_multi_layer_db-portal_users_db:v0.1
@@ -76,6 +83,8 @@ services:
       - portal_users_db_data:/var/lib/postgresql/data
     ports:
       - "5439:5432"
+    networks:
+      - traefik_net
 
   business_db1:
     image: warjag/warjag_multi_layer_db-business_db1:v0.1
@@ -95,6 +104,8 @@ services:
       - business_db1_data:/var/lib/postgresql/data
     ports:
       - "5436:5432"
+    networks:
+      - traefik_net
 
   business_db2:
     image: warjag/warjag_multi_layer_db-business_db2:v0.1
@@ -114,6 +125,8 @@ services:
       - business_db2_data:/var/lib/postgresql/data
     ports:
       - "5437:5432"
+    networks:
+      - traefik_net
 
   business_db3:
     image: warjag/warjag_multi_layer_db-business_db3:v0.1
@@ -133,6 +146,8 @@ services:
       - business_db3_data:/var/lib/postgresql/data
     ports:
       - "5438:5432"
+    networks:
+      - traefik_net
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -145,23 +160,29 @@ services:
       - "9090:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - traefik_net
 
   # =======================
   # Gateway (Traefik)
   # =======================
   traefik:
-    image: warjag/traefik:v3.0-0.1
+    image: traefik:v3.0
     platform: linux/amd64
     command:
       - "--api.dashboard=true"
-      - "--api.insecure=true"             # ⚠️ nur Dev!
+      - "--api.insecure=true"              # nur Dev
       - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik_net"
       - "--entrypoints.web.address=:80"
     ports:
-      - "80:80"       # API Gateway
-      - "8080:8080"   # Traefik Dashboard → http://localhost:8080
+      - "80:80"
+      - "8080:8080"   # Traefik Dashboard
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - traefik_net
 
   # =======================
   # APIs (intern je 8000)
@@ -182,7 +203,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/auth"
+      - "traefik.http.middlewares.auth-strip.stripprefix.forceSlash=true"
+      - "traefik.http.routers.auth.middlewares=auth-strip"
       - "traefik.http.services.auth.loadbalancer.server.port=8000"
+    networks:
+      - traefik_net
 
   customer_api:
     image: warjag/warjag_multi_layer_db-customer_api:v0.1
@@ -191,17 +218,19 @@ services:
     restart: unless-stopped
     env_file:
       - ./customer_api/.env
-    environment:
-      # NEU – dieselbe URL wie intern verwendet:
-      DATABASE_URL: postgresql://customer_user:${CUSTOMER_DB_PASS}@customer_db:5432/customer_db
     depends_on:
       customer_db:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.customer.rule=PathPrefix(`/customer`)"
-      - "traefik.http.services.customer.loadbalancer.server.port=8000"
-
+      - "traefik.http.routers.customer.entrypoints=web"
+      - "traefik.http.middlewares.customer-strip.stripprefix.prefixes=/customer"
+      - "traefik.http.middlewares.customer-strip.stripprefix.forceSlash=true"
+      - "traefik.http.routers.customer.middlewares=customer-strip"
+      - "traefik.http.services.customer.loadbalancer.server.port=8001"
+    networks:
+      - traefik_net
 
   portal_api:
     image: warjag/warjag_multi_layer_db-portal_api:v0.1
@@ -212,15 +241,19 @@ services:
       - ./portal_api/.env
     environment:
       TZ: Europe/Berlin
-      # NEU:
-      DATABASE_URL: postgresql://portal_user:${PORTAL_USERS_DB_PASS}@portal_users_db:5432/portal_users_db
     depends_on:
       portal_users_db:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portal.rule=PathPrefix(`/portal`)"
+      - "traefik.http.routers.portal.entrypoints=web"
+      - "traefik.http.middlewares.portal-strip.stripprefix.prefixes=/portal"
+      - "traefik.http.middlewares.portal-strip.stripprefix.forceSlash=true"
+      - "traefik.http.routers.portal.middlewares=portal-strip"
       - "traefik.http.services.portal.loadbalancer.server.port=8000"
+    networks:
+      - traefik_net
 
   business_api:
     image: warjag/warjag_multi_layer_db-business_api:v0.1
@@ -229,6 +262,12 @@ services:
     restart: unless-stopped
     env_file:
       - ./business_api/.env
+    environment:
+      BUSINESS_DB1_URL: postgresql://biz1_user:${BUSINESS_DB1_PASS}@business_db1:5432/business_db1
+      BUSINESS_DB2_URL: postgresql://biz2_user:${BUSINESS_DB2_PASS}@business_db2:5432/business_db2
+      BUSINESS_DB3_URL: postgresql://biz3_user:${BUSINESS_DB3_PASS}@business_db3:5432/business_db3
+      UVICORN_HOST: 0.0.0.0
+      UVICORN_PORT: 8000
     depends_on:
       business_db1:
         condition: service_healthy
@@ -239,7 +278,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.business.rule=PathPrefix(`/business`)"
+      - "traefik.http.routers.business.entrypoints=web"
+      - "traefik.http.middlewares.business-strip.stripprefix.prefixes=/business"
+      - "traefik.http.middlewares.business-strip.stripprefix.forceSlash=true"
+      - "traefik.http.routers.business.middlewares=business-strip"
       - "traefik.http.services.business.loadbalancer.server.port=8000"
+    networks:
+      - traefik_net
 
   admin_api:
     image: warjag/warjag_multi_layer_db-admin_api:v0.1
@@ -248,16 +293,19 @@ services:
     restart: unless-stopped
     env_file:
       - ./admin_api/.env
-    environment:
-      # NEU:
-      DATABASE_URL: postgresql://admin_user:${ADMIN_DB_PASS}@admin_db:5432/admin_db
     depends_on:
       admin_db:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.admin.rule=PathPrefix(`/admin`)"
-      - "traefik.http.services.admin.loadbalancer.server.port=8000"
+      - "traefik.http.routers.admin.entrypoints=web"
+      - "traefik.http.middlewares.admin-strip.stripprefix.prefixes=/admin"
+      - "traefik.http.middlewares.admin-strip.stripprefix.forceSlash=true"
+      - "traefik.http.routers.admin.middlewares=admin-strip"
+      - "traefik.http.services.admin.loadbalancer.server.port=8004"
+    networks:
+      - traefik_net
 
 # =======================
 # Volumes
@@ -271,4 +319,10 @@ volumes:
   business_db2_data:
   business_db3_data:
   pgadmin_data:
-  monitor_logs:
+
+# =======================
+# Networks
+# =======================
+networks:
+  traefik_net:
+    name: traefik_net

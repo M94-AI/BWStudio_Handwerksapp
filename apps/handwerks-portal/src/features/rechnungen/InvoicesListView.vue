@@ -99,7 +99,6 @@ async function remove(id: string | number | undefined){
   <div>
     <h1>Rechnungen</h1>
 
-    <!-- Einheitliche Toolbar (wie Aufträge): links Filter/Suche, rechts + Neue Rechnung -->
     <div class="toolbar">
       <div class="left">
         <input v-model="q" class="input" placeholder="Suchen…" />
@@ -163,7 +162,7 @@ async function remove(id: string | number | undefined){
 </template>
 
 <style scoped>
-/* Toolbar — identisch zu Aufträge */
+
 .toolbar{
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;
@@ -177,7 +176,7 @@ th, td{ padding:.55rem; border-bottom:1px solid #eee; text-align:left }
 td.r{ text-align:right }
 .actions{ display:flex; gap:.4rem; justify-content:flex-end }
 
-/* Sortierbarer Header (gleich wie Aufträge) */
+/* Sortierbarer Header */
 .th-btn{
   display:inline-flex; align-items:center; gap:.35rem;
   border:0; background:transparent; cursor:pointer; font:inherit; padding:0;
