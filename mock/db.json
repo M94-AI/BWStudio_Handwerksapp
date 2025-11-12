@@ -108,7 +108,13 @@
       "status": "bezahlt",
       "total": 300,
       "dueDate": "2025-10-12"
-    }
+    },
+    {
+  "invoices": [
+    { "id": 1, "customerId": 42, "orderId": 123, "title": "Montage Auftrag #123", "status": "offen", "total": 1190, "dueDate": "2025-11-24", "notes": "PO-Nummer angeben" }
+  ]
+}
+
   ],
   "inventory": [
     {
