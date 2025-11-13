@@ -53,7 +53,7 @@ async function load(){
         </div>
 
         <div class="row">
-          <button class="btn" @click="$router.back()">Zurück</button>
+          <UiButton @click="$router.back()">Zurück</UiButton>
         </div>
       </Card>
     </LoadState>
@@ -63,10 +63,17 @@ async function load(){
 <style scoped>
 .stack>*+*{ margin-top:1rem }
 .grid{
-  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem;
 }
-@media (max-width:800px){ .grid{ grid-template-columns:1fr } }
+@media (max-width:800px){
+  .grid{ grid-template-columns:1fr }
+}
 .label{ font-size:.85rem; color:#666; }
-.row{ margin-top:1rem; display:flex; gap:.5rem }
-.btn{padding:.5rem .7rem;border:1px solid #ddd;border-radius:.5rem;background:#fff;cursor:pointer}
+.row{
+  margin-top:1rem;
+  display:flex;
+  gap:.5rem;
+}
 </style>

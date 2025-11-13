@@ -65,26 +65,22 @@ async function remove(id: string|number) {
   <div class="stack">
     <h1>Kunden</h1>
 
-    <!--- Einheitliche Toolbar  --->
+    <!-- Einheitliche Toolbar -->
     <div class="toolbar">
       <div class="left">
         <input v-model="q" class="input" placeholder="Suchen… (Name, E-Mail, Telefon, #ID)" />
-        <dropdown
-          v-model="status"
+        <Dropdown
+          v-model="statusFilter"
           :options="statusOptions"
           placeholder="Alle Kunden"
-          />
-
-
-        <button class="btn ghost" @click="reload">Aktualisieren</button>
+        />
+        <UiButton variant="ghost" @click="reload">Aktualisieren</UiButton>
       </div>
 
-
-      <!--- Button einheitlich -->
       <div class="right">
-        <button class="btn primary" type="button" @click="router.push({ name: 'customers-new' })">
+        <UiButton variant="primary" type="button" @click="router.push({ name: 'customers-new' })">
           + Neuer Kunde
-        </button>
+        </UiButton>
       </div>
     </div>
 
@@ -124,9 +120,9 @@ async function remove(id: string|number) {
                   {{ c.status ?? 'aktiv' }}
                 </span>
               </td>
-              <td class="r">
-                <button class="btn" @click="router.push(`/kunden/${c.id}`)">Details</button>
-                <button class="btn danger" @click="remove(c.id)">Löschen</button>
+              <td class="actions">
+                <UiButton @click="router.push(`/kunden/${c.id}`)">Details</UiButton>
+                <UiButton variant="danger" @click="remove(c.id)">Löschen</UiButton>
               </td>
             </tr>
             <tr v-if="!visible.length">
@@ -144,33 +140,37 @@ async function remove(id: string|number) {
 
 /* Toolbar */
 .toolbar{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:.5rem; margin:.75rem 0; flex-wrap:wrap;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.5rem;
+  margin:.75rem 0;
+  flex-wrap:wrap;
 }
 .left{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap }
 .right{ display:flex; gap:.5rem }
 
-.search{
-  min-width:260px; padding:.5rem .65rem; border:1px solid #ddd; border-radius:.5rem; background:#fff;
-}
-.filter{
-  display:inline-flex; align-items:center; gap:.4rem;
-  border:1px solid #ddd; padding:.35rem .5rem; border-radius:.5rem; background:#fff;
-}
-.filter select{ border:0; outline:0; background:transparent; padding:.2rem 0 }
-
-.btn{padding:.5rem .7rem;border:1px solid #ddd;border-radius:.5rem;background:#fff;cursor:pointer}
-.btn.ghost{ background:#fff }
-.btn.primary{ background:#2b74ff;color:#fff;border-color:#2b74ff }
-.btn.danger{ color:#b3261e;border-color:#f4c7c3;background:#fde7e9 }
-
+/* Tabelle */
 .tbl{width:100%;border-collapse:collapse}
 th,td{padding:.55rem;border-bottom:1px solid #eee;text-align:left}
-td.r{ text-align:right }
 
-.th-btn{ display:inline-flex; align-items:center; gap:.35rem; border:0; background:transparent; cursor:pointer; font:inherit; padding:0 }
+/* Actions-Zelle */
+.actions{ display:flex; gap:.4rem; justify-content:flex-end; white-space:nowrap }
+
+/* Sortierbarer Header */
+.th-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font:inherit;
+  padding:0;
+}
 .arrow{ min-width:1em; display:inline-block; color:#888 }
 
+/* Status-Badges */
 .badge{padding:.1rem .45rem;border-radius:999px;font-size:.78rem}
 .badge.ok{ background:#e6f4ea; color:#137333 }
 .badge.muted{ background:#eee; color:#555 }

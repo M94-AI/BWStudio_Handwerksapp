@@ -69,8 +69,8 @@ const filtered = computed(() => {
 
     // Status-Filter (Dropdown steuert direkt `status`)
     let okS = true
-    if (status.value === 'offen')      okS = i.status === 'offen'
-    else if (status.value === 'bezahlt') okS = i.status === 'bezahlt'
+    if (status.value === 'offen')         okS = i.status === 'offen'
+    else if (status.value === 'bezahlt')  okS = i.status === 'bezahlt'
     else if (status.value === 'überfällig') okS = isOverdue(i)
 
     return okQ && okS
@@ -107,13 +107,15 @@ async function remove(id: string | number | undefined){
           :options="statusOptions"
           placeholder="Alle Rechnungen"
         />
-        <button class="btn" type="button" @click="reload">Aktualisieren</button>
+
+        <UiButton variant="ghost" type="button" @click="reload">Aktualisieren</UiButton>
       </div>
 
       <div class="right">
-        <button class="btn primary" type="button" @click="router.push({ name: 'invoices-new' })">
+
+        <UiButton variant="primary" type="button" @click="router.push({ name: 'invoices-new' })">
           + Neue Rechnung
-        </button>
+        </UiButton>
       </div>
     </div>
 
@@ -147,8 +149,10 @@ async function remove(id: string | number | undefined){
                 <td>{{ i.dueDate || '—' }}</td>
                 <td class="r">{{ (i.total ?? 0).toFixed(2) }}€</td>
                 <td class="actions">
-                  <button class="btn" @click="router.push(`/rechnungen/${i.id}`)">Details</button>
-                  <button class="btn danger" @click="remove(i.id)">Löschen</button>
+
+                  <UiButton @click="router.push(`/rechnungen/${i.id}`)">Details</UiButton>
+
+                  <UiButton variant="danger" @click="remove(i.id)">Löschen</UiButton>
                 </td>
               </tr>
             </tbody>
@@ -162,7 +166,6 @@ async function remove(id: string | number | undefined){
 </template>
 
 <style scoped>
-
 .toolbar{
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;

@@ -16,7 +16,7 @@ const error = ref<string|null>(null)
 
 // Toolbar-States
 const q = ref('')
-const status = ref('') // '' = Alle (passt zum Dropdown)
+const status = ref('') // '' = Alle
 
 // Sortier-State (Fällig)
 const sortDir = ref<'asc'|'desc'>('asc')
@@ -25,7 +25,7 @@ const sortDir = ref<'asc'|'desc'>('asc')
 async function reload(){
   loading.value = true; error.value = null
   try { items.value = await listOrders() }
-  catch(e:any){ error.value = e.message ?? String(e) }
+  catch(e:any){ error.value = e?.message ?? String(e) }
   finally { loading.value = false }
 }
 onMounted(reload)
@@ -37,7 +37,7 @@ function dueMs(due?: string) {
   return isNaN(+d) ? null : +d
 }
 function toggleSortDue(){
-  sortDir.value = (sortDir.value === 'asc' ? 'desc' : 'asc')
+  sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
 }
 function sortArrow(){
   return sortDir.value === 'asc' ? '▲' : '▼'
@@ -96,13 +96,13 @@ async function remove(id: number | string) {
           :options="statusOptions"
           placeholder="Alle Aufträge"
         />
-        <button class="btn" type="button" @click="reload">Aktualisieren</button>
+        <UiButton variant="ghost" type="button" @click="reload">Aktualisieren</UiButton>
       </div>
 
       <div class="right">
-        <button class="btn primary" type="button" @click="router.push({ name: 'orders-new' })">
+        <UiButton variant="primary" type="button" @click="router.push({ name: 'orders-new' })">
           + Neuer Auftrag
-        </button>
+        </UiButton>
       </div>
     </div>
 
@@ -131,8 +131,8 @@ async function remove(id: number | string) {
               <td><StatusBadge :status="o.status" /></td>
               <td>{{ o.due || '—' }}</td>
               <td class="actions">
-                <button class="btn" @click="router.push(`/auftraege/${o.id}`)">Details</button>
-                <button class="btn danger" @click="remove(o.id!)">Löschen</button>
+                <UiButton @click="router.push(`/auftraege/${o.id}`)">Details</UiButton>
+                <UiButton variant="danger" @click="remove(o.id!)">Löschen</UiButton>
               </td>
             </tr>
             <tr v-if="!filtered.length">
@@ -146,6 +146,7 @@ async function remove(id: number | string) {
 </template>
 
 <style scoped>
+/* Toolbar */
 .toolbar{
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;
@@ -154,9 +155,11 @@ async function remove(id: number | string) {
 .right{ display:flex; gap:.5rem }
 
 /* Tabelle */
-.tbl{width:100%;border-collapse:collapse}
-th,td{padding:.55rem;border-bottom:1px solid #eee;text-align:left}
-.actions{display:flex;gap:.4rem;justify-content:flex-end}
+.tbl{ width:100%; border-collapse:collapse }
+th,td{ padding:.55rem; border-bottom:1px solid #eee; text-align:left }
+
+/* Actions-Zelle: Buttons nebeneinander und rechtsbündig */
+.actions{ display:flex; gap:.4rem; justify-content:flex-end; white-space:nowrap }
 
 /* Sortierbarer Header */
 .th-btn{
@@ -166,5 +169,5 @@ th,td{padding:.55rem;border-bottom:1px solid #eee;text-align:left}
 .arrow{ min-width:1em; display:inline-block; color:#888 }
 
 /* Link in Titel */
-a{color:#1a73e8;cursor:pointer}
+a{ color:#1a73e8; cursor:pointer }
 </style>
