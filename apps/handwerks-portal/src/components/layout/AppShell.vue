@@ -156,7 +156,7 @@ function logout(){
 .side-head{
   display:flex;
   align-items:center;
-  justify-content:space-between;   /* verteilt Logo/Title/Button */
+  justify-content:space-between;   /* verteilt Logo/Title/ButtonAlt */
   padding:.75rem;                  /* symmetrisch */
   height:56px;                     /* feste Höhe = saubere Vertikalmitte */
   box-sizing:border-box;

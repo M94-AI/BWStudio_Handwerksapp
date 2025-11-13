@@ -41,7 +41,7 @@ function isOverdue(i: Invoice){
     <div class="hdr">
       <h1>Rechnung #{{ item?.id ?? '—' }}</h1>
       <div class="hdr-actions">
-        <button class="btn" @click="back">Zur Übersicht</button>
+        <UiButton @click="back">Zur Übersicht</UiButton>
       </div>
     </div>
 

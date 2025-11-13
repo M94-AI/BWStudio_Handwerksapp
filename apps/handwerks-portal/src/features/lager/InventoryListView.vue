@@ -52,69 +52,66 @@ async function remove(id: string|number|undefined) {
       <div class="left">
         <input v-model="q" class="input" placeholder="Suchen… (Name, SKU, ID, Lagerplatz)" />
         <Dropdown v-model="status" :options="statusOptions" placeholder="Alle Artikel" />
-        <button class="btn" type="button" @click="reload">Aktualisieren</button>
+        <UiButton variant="ghost" type="button" @click="reload">Aktualisieren</UiButton>
       </div>
       <div class="right">
-        <button class="btn primary" type="button" @click="router.push({ name: 'inventory-new' })">
+        <UiButton variant="primary" type="button" @click="router.push({ name: 'inventory-new' })">
           + Neuer Artikel
-        </button>
+        </UiButton>
       </div>
     </div>
 
-<LoadState :loading="inv.loading" :error="inv.error">
-  <Card>
-    <template #default>
-      <div class="inv">
-        <div class="table-wrap">
-          <table v-if="filtered.length" class="tbl">
-            <colgroup>
-              <col style="width:72px" />        <!-- # -->
-              <col />                           <!-- Name (flex) -->
-              <col style="width:110px" />       <!-- Bestand -->
-              <col style="width:130px" />       <!-- Status -->
-              <col style="width:200px" />       <!-- Lagerplatz -->
-              <col style="width:220px" />       <!-- Aktionen -->
-            </colgroup>
+    <LoadState :loading="inv.loading" :error="inv.error">
+      <Card>
+        <template #default>
+          <div class="inv">
+            <div class="table-wrap">
+              <table v-if="filtered.length" class="tbl">
+                <colgroup>
+                  <col style="width:72px" />
+                  <col />
+                  <col style="width:110px" />
+                  <col style="width:130px" />
+                  <col style="width:200px" />
+                  <col style="width:220px" />
+                </colgroup>
 
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th class="r">Bestand</th>
-                <th>Status</th>
-                <th>Lagerplatz</th>
-                <th class="r">Aktionen</th>
-              </tr>
-            </thead>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th class="r">Bestand</th>
+                    <th>Status</th>
+                    <th>Lagerplatz</th>
+                    <th class="r">Aktionen</th>
+                  </tr>
+                </thead>
 
-            <tbody>
-              <tr v-for="(a,i) in filtered" :key="rowKey(a,i)">
-                <td>#{{ a.id }}</td>
-                <td class="cell-name">{{ a.name }}</td>
-                <td class="r">{{ a.stock }}</td>
-                <td><StatusBadge :status="inv.statusOf(a)" /></td>
-                <td>{{ a.location || '—' }}</td>
-                <td class="actions">
-                  <button class="btn btn-sm" @click="router.push({ name: 'inventory-detail', params:{ id: a.id } })">Details</button>
-                  <button class="btn btn-sm danger" @click="remove(a.id)">Löschen</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                <tbody>
+                  <tr v-for="(a,i) in filtered" :key="rowKey(a,i)">
+                    <td>#{{ a.id }}</td>
+                    <td class="cell-name">{{ a.name }}</td>
+                    <td class="r">{{ a.stock }}</td>
+                    <td><StatusBadge :status="inv.statusOf(a)" /></td>
+                    <td>{{ a.location || '—' }}</td>
+                    <td class="actions">
+                      <UiButton class="btn-sm" @click="router.push({ name: 'inventory-detail', params:{ id: a.id } })">Details</UiButton>
+                      <UiButton class="btn-sm" variant="danger" @click="remove(a.id)">Löschen</UiButton>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-          <p v-else>Keine Artikel gefunden.</p>
-        </div>
-      </div>
-    </template>
-  </Card>
-</LoadState>
-
+              <p v-else>Keine Artikel gefunden.</p>
+            </div>
+          </div>
+        </template>
+      </Card>
+    </LoadState>
   </div>
 </template>
 
 <style>
-
-
 .toolbar{
   display:flex; align-items:center; justify-content:space-between;
   gap:.5rem; margin:.75rem 0; flex-wrap:wrap;
@@ -123,41 +120,25 @@ async function remove(id: string|number|undefined) {
 .right{ display:flex; gap:.5rem }
 
 /* alles in .inv gekapselt, damit nichts anderes leidet */
-.inv .table-wrap{
-  width:100%;
-  overflow-x:auto;              /* lieber horizontal scrollen als Layout zerstören */
-}
-.inv .tbl{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:auto;            /* natürliches Layout → kein „Zerren“ */
-}
+.inv .table-wrap{ width:100%; overflow-x:auto; }
+.inv .tbl{ width:100%; border-collapse:collapse; table-layout:auto; }
 
 .inv th, .inv td{
-  padding:.55rem;
-  border-bottom:1px solid #eee;
-  text-align:left;
-  vertical-align:middle;
+  padding:.55rem; border-bottom:1px solid #eee; text-align:left; vertical-align:middle;
 }
 .inv td.r, .inv th.r{ text-align:right }
 
 /* einzeilig + Ellipsis hält Head/Body bündig */
-.inv .tbl th, .inv .tbl td{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+.inv .tbl th, .inv .tbl td{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* Name darf flexibel sein, bleibt aber einzeilig */
 .inv .cell-name{ max-width:1px }
 
 /* Actions: in einer Reihe, kein Umbruch */
 .inv .actions{
-  display:flex;
-  gap:.4rem;
-  justify-content:flex-end;
-  white-space:nowrap;
+  display:flex; gap:.4rem; justify-content:flex-end; white-space:nowrap;
 }
-.inv .btn-sm{ padding:.35rem .55rem; font-size:.9rem }
 
+/* kleine Buttons in der Tabelle */
+.inv .btn-sm{ padding:.35rem .55rem; font-size:.9rem }
 </style>

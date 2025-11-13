@@ -62,23 +62,27 @@ async function remove() {
         <p><strong>Fällig:</strong> {{ item.due || '—' }}</p>
         <p><strong>Notizen:</strong> {{ item.notes || '—' }}</p>
 
-        <div style="display:flex;gap:.5rem;margin-top:.75rem;">
-          <button class="btn" @click="$router.push(`/auftraege/${item.id}?edit=1`)">Bearbeiten</button>
-          <button class="btn danger" @click="remove">Löschen</button>
-          <button class="btn" @click="$router.push('/auftraege')">Zurück</button>
+        <div class="actions">
+          <UiButton @click="$router.push(`/auftraege/${item.id}?edit=1`)">Bearbeiten</UiButton>
+          <UiButton variant="danger" @click="remove">Löschen</UiButton>
+          <UiButton @click="$router.push('/auftraege')">Zurück</UiButton>
         </div>
       </Card>
 
       <!-- Fallback, falls item trotz allem fehlt -->
       <Card v-else title="Auftrag nicht gefunden">
         <p v-if="error">Fehler: {{ error }}</p>
-        <button class="btn" @click="$router.push('/auftraege')">Zur Liste</button>
+        <UiButton @click="$router.push('/auftraege')">Zur Liste</UiButton>
       </Card>
     </LoadState>
   </div>
 </template>
 
 <style scoped>
-.btn{padding:.5rem .7rem;border:1px solid #ddd;border-radius:.5rem;background:#fff;cursor:pointer}
-.danger{color:#b3261e;border-color:#f4c7c3;background:#fde7e9}
+.actions{
+  display:flex;
+  gap:.5rem;
+  margin-top:.75rem;
+  flex-wrap:wrap;
+}
 </style>

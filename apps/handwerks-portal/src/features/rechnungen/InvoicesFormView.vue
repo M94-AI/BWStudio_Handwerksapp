@@ -10,7 +10,6 @@ const loading = ref(false)
 const error = ref<string|null>(null)
 
 const form = ref<Invoice>({
-  // id optional
   title: '',
   customerId: 0,
   orderId: undefined,
@@ -28,7 +27,6 @@ async function submit(){
       throw new Error('Bitte eine gültige Kunden-ID angeben.')
     }
     const created = await createInvoice(form.value)
-    // createInvoice gibt bei manchen Backends den Body nicht zurück -> Fallback auf form
     const id = (created as any)?.id ?? form.value.id
     if (id != null) router.push(`/rechnungen/${id}`)
     else router.push({ name: 'invoices-list' })
@@ -87,8 +85,12 @@ async function submit(){
             </div>
 
             <div class="actions">
-              <button type="submit" class="btn primary">Rechnung anlegen</button>
-              <button type="button" class="btn" @click="router.push({ name: 'invoices-list' })">Abbrechen</button>
+              <UiButton variant="primary" type="submit" :disabled="loading" :loading="loading">
+                Rechnung anlegen
+              </UiButton>
+              <UiButton type="button" @click="router.push({ name: 'invoices-list' })">
+                Abbrechen
+              </UiButton>
             </div>
           </form>
         </template>
@@ -101,6 +103,16 @@ async function submit(){
 .form{ display:grid; gap:.75rem; margin-top:.75rem }
 .row{ display:grid; gap:.35rem }
 .lbl{ font-size:.85rem; opacity:.7 }
-.input{ border:1px solid #e5e5e5; border-radius:.5rem; padding:.5rem .6rem; min-height:2.25rem }
-.actions{ display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem }
+.input{
+  border:1px solid #e5e5e5;
+  border-radius:.5rem;
+  padding:.5rem .6rem;
+  min-height:2.25rem;
+}
+.actions{
+  display:flex;
+  gap:.5rem;
+  justify-content:flex-end;
+  margin-top:.5rem;
+}
 </style>
