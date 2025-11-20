@@ -31,6 +31,11 @@ const router = createRouter({
 
         //   ---- Lager----
         { path: 'lager', name: 'inventory-list', component: () => import('@/features/lager/InventoryListView.vue'),},
+        { path: "/lager/neu", name: "inventory-new", component: () => import('@/features/lager/InventoryFormView.vue') },
+        { path: "/lager/:id", name: "inventory-detail", component: () => import('@/features/lager/InventoryFormView.vue') },
+
+
+
 
         //    ----Termine----
         { path: 'termine', name: 'calendar', component: () => import('@/features/termine/CalendarView.vue') },

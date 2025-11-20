@@ -1,3 +1,4 @@
+// src/stores/inventory.ts
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Article } from '@/services/inventory'
@@ -9,12 +10,12 @@ import {
   deleteArticle,
 } from '@/services/inventory'
 
-const TTL_MS = 30_000
+const TTL_MS = 30_000 // 30s Cache für fetchAll
 
 // Patch-Typ: niemals id patchen
 type ArticlePatch = Partial<Omit<Article, 'id'>> & { id?: never }
 
-// util: nur definierte Felder übernehmen
+// util: nur definierte Felder übernehmen (undefined = ignorieren)
 function applyPatchDefined<T extends object>(base: T, patch: Partial<T>): T {
   const out = { ...base } as any
   for (const [k, v] of Object.entries(patch)) {
@@ -30,27 +31,44 @@ export const useInventoryStore = defineStore('inventory', () => {
   const error = ref<string | null>(null)
   const lastLoaded = ref<number>(0)
 
-  // ----- Business-Logik -----
+  // ----- Business-Logik / Helper -----
+
+  // Artikel als Computed nach ID (praktisch für Detail-Views)
   const byId = (id: string | number) =>
     computed(() => items.value.find(a => String(a.id) === String(id)))
 
   const isEmpty = (a: Article) => (a.stock ?? 0) <= 0
+
   const isLow = (a: Article) => {
     const min = a.minStock ?? 0
     const stock = a.stock ?? 0
-    return stock > 0 && stock <= min
+    // "niedrig": nur wenn noch > 0 auf Lager, aber <= Mindestbestand
+    return stock > 0 && min > 0 && stock <= min
   }
+
   const statusOf = (a: Article): 'ok' | 'niedrig' | 'leer' =>
     isEmpty(a) ? 'leer' : isLow(a) ? 'niedrig' : 'ok'
 
   // ----- Getters -----
-  const lowStockItems = computed(() => items.value.filter(isLow))
-  const emptyItems    = computed(() => items.value.filter(isEmpty))
-  const all           = computed(() =>
-    items.value.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
+
+  // Alphabetisch sortierte Liste aller Artikel
+  const all = computed(() =>
+    items.value
+      .slice()
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)))
   )
 
-  // ----- Local helper -----
+  // Für Dashboard: Artikel mit niedrigem Bestand, nach stock sortiert
+  const lowStockItems = computed(() =>
+    items.value
+      .filter(isLow)
+      .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
+  )
+
+  const emptyItems = computed(() => items.value.filter(isEmpty))
+
+  // ----- Lokaler Helper -----
+
   function upsertLocal(a: Article) {
     if (a == null || a.id == null) return
     const i = items.value.findIndex(x => String(x.id) === String(a.id))
@@ -64,9 +82,18 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // ----- Actions -----
+
   async function fetchAll(opts: { force?: boolean } = {}) {
     const { force = false } = opts
-    if (!force && items.value.length && Date.now() - lastLoaded.value < TTL_MS) return
+
+    // Einfacher TTL-Cache
+    if (
+      !force &&
+      items.value.length &&
+      Date.now() - lastLoaded.value < TTL_MS
+    ) {
+      return
+    }
 
     loading.value = true
     error.value = null
@@ -97,12 +124,14 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
+  // Neuer Artikel (z. B. aus "Neuer Artikel"-Formular)
   async function createOne(data: Partial<Article>) {
-    const created = await createArticle(data) // erwartet Article mit echter id
+    const created = await createArticle(data) // Service liefert Article mit echter id
     upsertLocal(created)
     return created
   }
 
+  // Artikel bearbeiten (optimistic update)
   async function updateOne(id: Article['id'], patch: ArticlePatch) {
     const idx = items.value.findIndex(x => String(x.id) === String(id))
 
@@ -115,7 +144,8 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     // Optimistic Update
     const base = items.value[idx]!
-    const prev = structuredClone(base)
+    // FIX: structuredClone → JSON deep copy, damit es immer klappt
+    const prev: Article = JSON.parse(JSON.stringify(base))
 
     const optimistic: Article = applyPatchDefined(base, patch) as Article
     optimistic.id = base.id // id niemals überschreiben
@@ -126,7 +156,8 @@ export const useInventoryStore = defineStore('inventory', () => {
       upsertLocal(saved)
       return saved
     } catch (e) {
-      items.value[idx] = prev // rollback
+      // Rollback bei Fehler
+      items.value[idx] = prev
       throw e
     }
   }
@@ -137,23 +168,41 @@ export const useInventoryStore = defineStore('inventory', () => {
     try {
       await deleteArticle(id)
     } catch (e) {
-      items.value = prev // rollback
+      // Rollback bei Fehler
+      items.value = prev
       throw e
     }
   }
 
+  // Komfortfunktion, speziell für Mindestbestand (z. B. aus Detail-Form)
   async function setMinStock(id: string | number, minStock: number) {
     return updateOne(id, { minStock })
   }
 
   return {
     // state
-    items, loading, error, lastLoaded,
-    // helpers
-    statusOf, isEmpty, isLow, byId,
+    items,
+    loading,
+    error,
+    lastLoaded,
+
+    // helpers / business
+    statusOf,
+    isEmpty,
+    isLow,
+    byId,
+
     // getters
-    all, lowStockItems, emptyItems,
+    all,
+    lowStockItems,
+    emptyItems,
+
     // actions
-    fetchAll, fetchOne, createOne, updateOne, removeOne, setMinStock,
+    fetchAll,
+    fetchOne,
+    createOne,
+    updateOne,
+    removeOne,
+    setMinStock,
   }
 })

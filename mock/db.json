@@ -55,24 +55,6 @@
       "priority": 2
     },
     {
-      "id": "e8f0",
-      "customerId": 42,
-      "title": "Rohrreinigung",
-      "status": "offen",
-      "due": "2025-10-17",
-      "notes": "Rohr ist verstopft und der 42er Kunde hätte gerne Milch dazu!",
-      "priority": 1
-    },
-    {
-      "id": "2701",
-      "customerId": 22,
-      "title": "Ratte im Rohr",
-      "status": "offen",
-      "due": "2025-10-31",
-      "notes": "Kunde hat ne Ratte im Rohr und sagt seine Frau würde sie gerne entfernen lassen!\nKunde hat nur am 31.10.2025 zeit",
-      "priority": 3
-    },
-    {
       "id": "9bef",
       "customerId": 42,
       "title": "Wartung heizkörper",
@@ -93,7 +75,7 @@
     },
     {
       "id": "5002",
-      "orderId": "2701",
+      "orderId": null,
       "customerId": 22,
       "title": "RG-2025-0002",
       "status": "offen",
@@ -110,18 +92,51 @@
       "dueDate": "2025-10-12"
     },
     {
-  "invoices": [
-    { "id": 1, "customerId": 42, "orderId": 123, "title": "Montage Auftrag #123", "status": "offen", "total": 1190, "dueDate": "2025-11-24", "notes": "PO-Nummer angeben" }
-  ]
-}
-
+      "invoices": [
+        {
+          "id": 1,
+          "customerId": 42,
+          "orderId": 123,
+          "title": "Montage Auftrag #123",
+          "status": "offen",
+          "total": 1190,
+          "dueDate": "2025-11-24",
+          "notes": "PO-Nummer angeben"
+        }
+      ],
+      "id": "69d4"
+    }
   ],
   "inventory": [
     {
-      "id": "9001",
-      "sku": "SCH-10",
       "name": "Schraube M10",
-      "stock": 250
+      "sku": "SCH-10",
+      "stock": 250,
+      "minStock": null,
+      "unit": "Stk",
+      "location": "1",
+      "notes": "Test-Änderung",
+      "id": "9001"
+    },
+    {
+      "id": "f9fc",
+      "name": "Schraubenzieher",
+      "sku": "773377",
+      "stock": 15,
+      "minStock": 15,
+      "unit": "Stk",
+      "location": "1",
+      "notes": null
+    },
+    {
+      "id": "38d3",
+      "name": "Schraube M17",
+      "sku": "113344",
+      "stock": 15,
+      "minStock": 20,
+      "unit": "Stk",
+      "location": "1",
+      "notes": null
     }
   ],
   "events": [
@@ -138,7 +153,7 @@
       "id": "7002",
       "title": "Termin: Rohrreinigung",
       "when": "2025-10-15T13:30:00+02:00",
-      "orderId": "e8f0",
+      "orderId": null,
       "technicianId": 2,
       "customerId": 42,
       "location": "Muster GmbH, Werkhalle 3"
@@ -147,7 +162,7 @@
   "offers": [
     {
       "id": "A-1001",
-      "orderId": "e8f0",
+      "orderId": null,
       "customerId": 42,
       "title": "Angebot: Rohrreinigung",
       "status": "offen",
@@ -156,7 +171,7 @@
     },
     {
       "id": "A-1002",
-      "orderId": "2701",
+      "orderId": null,
       "customerId": 22,
       "title": "Angebot: Rohrreinigung Paket",
       "status": "akzeptiert",
