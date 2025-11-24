@@ -13,6 +13,11 @@ const item = ref<Customer|null>(null)
 const loading = ref(false)
 const error = ref<string|null>(null)
 
+//Bearbeiten Funktion
+//
+//
+
+
 onMounted(load)
 async function load(){
   loading.value = true; error.value = null

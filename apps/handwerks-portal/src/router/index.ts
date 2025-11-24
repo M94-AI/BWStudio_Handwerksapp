@@ -20,6 +20,8 @@ const router = createRouter({
         { path: 'auftraege', name: 'orders-list', component: () => import('@/features/auftraege/OrdersListView.vue') },
         { path: 'auftraege/neu', name: 'orders-new', component: () => import('@/features/auftraege/OrderFormView.vue') },
         { path: 'auftraege/:id', name: 'orders-detail', component: () => import('@/features/auftraege/OrderDetailView.vue') },
+        { path: 'auftraege/:id/bearbeiten', name: 'orders-edit', component: () => import('@/features/auftraege/OrderFormView.vue') },
+        
 
         //    ----Angebote----
         { path: 'angebote', name: 'offers-list', component: () => import('@/features/angebote/OffersListView.vue') },

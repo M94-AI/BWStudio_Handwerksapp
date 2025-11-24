@@ -44,7 +44,7 @@ async function save() {
   try {
     if (hasId.value) {
       await updateOrder(idRaw.value, form.value)
-      router.push({ name: 'orders-list' })
+      router.push({ name: 'orders-detail', params: { id: idRaw.value } })
     } else {
       const created = await createOrder(form.value)
       const newId = (created as any)?.id

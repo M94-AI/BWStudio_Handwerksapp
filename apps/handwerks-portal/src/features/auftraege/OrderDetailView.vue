@@ -12,6 +12,15 @@ const item = ref<Order | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
+
+
+function goEdit() {
+  if (!item.value?.id) return
+  router.push({ name: "orders-edit", params: { id: String(item.value.id)}})
+  }
+
+
+
 async function loadWithRetry() {
   loading.value = true
   error.value = null
@@ -63,7 +72,7 @@ async function remove() {
         <p><strong>Notizen:</strong> {{ item.notes || '—' }}</p>
 
         <div class="actions">
-          <UiButton @click="$router.push(`/auftraege/${item.id}?edit=1`)">Bearbeiten</UiButton>
+          <UiButton @click="goEdit">Bearbeiten</UiButton>
           <UiButton variant="danger" @click="remove">Löschen</UiButton>
           <UiButton @click="$router.push('/auftraege')">Zurück</UiButton>
         </div>
