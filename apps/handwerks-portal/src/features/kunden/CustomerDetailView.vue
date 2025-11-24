@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
 import LoadState from '@/components/ui/LoadState.vue'
 import { getCustomer, type Customer } from '@/services/customers'
+import UiButton from "@/components/ui/Button.vue";
 
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +17,10 @@ const error = ref<string|null>(null)
 //Bearbeiten Funktion
 //
 //
+function goEdit() {
+  if (!item.value?.id) return
+  router.push({ name: "customer-edit", params: { id: String(item.value.id)}})
+  }
 
 
 onMounted(load)
@@ -25,6 +30,13 @@ async function load(){
   catch(e:any){ error.value = e?.message ?? String(e) }
   finally { loading.value = false }
 }
+
+
+function cancel() {{
+    router.push({ name: "customers-list" })
+  }
+}
+
 </script>
 
 <template>
@@ -58,8 +70,11 @@ async function load(){
         </div>
 
         <div class="row">
-          <UiButton @click="$router.back()">Zurück</UiButton>
+          <UiButton @click="goEdit()">Bearbeiten</UiButton>
+          <UiButton type="button" @click="cancel">Zurück</UiButton>
         </div>
+
+
       </Card>
     </LoadState>
   </div>

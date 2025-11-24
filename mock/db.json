@@ -25,7 +25,13 @@
     {
       "id": "22",
       "name": "Beispiel AG",
-      "status": "aktiv"
+      "status": "aktiv",
+      "email": "beispiel@gmail.com",
+      "phone": "+49 1234234",
+      "street": "Die Straße 1",
+      "zip": "12345",
+      "city": "Augustdorf",
+      "notes": "Besonderer Kunde"
     }
   ],
   "technicians": [

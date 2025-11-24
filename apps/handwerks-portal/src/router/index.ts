@@ -21,7 +21,7 @@ const router = createRouter({
         { path: 'auftraege/neu', name: 'orders-new', component: () => import('@/features/auftraege/OrderFormView.vue') },
         { path: 'auftraege/:id', name: 'orders-detail', component: () => import('@/features/auftraege/OrderDetailView.vue') },
         { path: 'auftraege/:id/bearbeiten', name: 'orders-edit', component: () => import('@/features/auftraege/OrderFormView.vue') },
-        
+
 
         //    ----Angebote----
         { path: 'angebote', name: 'offers-list', component: () => import('@/features/angebote/OffersListView.vue') },
@@ -45,7 +45,7 @@ const router = createRouter({
         // Kunden
         { path: 'kunden', name: 'customers-list', component: () => import('@/features/kunden/CustomerListView.vue') },
         { path: 'kunden/:id', name: 'customers-detail', component: () => import('@/features/kunden/CustomerDetailView.vue') },
-
+        { path: "kunden/:id/bearbeiten", name: "customer-edit", component: () => import('@/features/kunden/CustomerFormView.vue') },
       ],
     },
     { path: '/login', name: 'login', component: () => import('@/features/auth/LoginView.vue') },
