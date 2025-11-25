@@ -13,7 +13,6 @@ import {
   type Customer,
 } from '@/services/customers'
 
-
 const route = useRoute()
 const router = useRouter()
 
@@ -25,11 +24,17 @@ const form = ref<Partial<Customer>>({
   street: '',
   zip: '',
   city: '',
+  billingStreet: '',
+  billingZip: '',
+  billingCity: '',
   notes: '',
 })
 
 const saving = ref(false)
 const error = ref<string | null>(null)
+
+// Abweichende Rechnungsadresse?
+const hasBilling = ref(false)
 
 // ---- Edit / New-Erkennung ----
 const idRaw = computed(() => (route.params.id as string | undefined) ?? '')
@@ -51,9 +56,19 @@ onMounted(async () => {
       street: '',
       zip: '',
       city: '',
+      billingStreet: '',
+      billingZip: '',
+      billingCity: '',
       notes: '',
       ...data,
     }
+
+    // Checkbox aktivieren, falls schon Rechnungsadresse vorhanden
+    hasBilling.value = !!(
+      form.value.billingStreet ||
+      form.value.billingZip ||
+      form.value.billingCity
+    )
   } catch (e: any) {
     error.value = e?.message ?? String(e)
   }
@@ -64,6 +79,14 @@ async function save() {
   if (saving.value) return
   saving.value = true
   error.value = null
+
+  // Wenn keine abweichende Rechnungsadresse gewünscht,
+  // Felder leeren (optional, aber sauber)
+  if (!hasBilling.value) {
+    form.value.billingStreet = ''
+    form.value.billingZip = ''
+    form.value.billingCity = ''
+  }
 
   try {
     if (hasId.value) {
@@ -88,7 +111,7 @@ async function save() {
   }
 }
 
-// ---- Lösche ----
+// ---- Löschen ----
 async function removeCustomer() {
   if (!hasId.value) return
   if (!confirm('Diesen Kunden wirklich löschen?')) return
@@ -123,6 +146,8 @@ async function removeCustomer() {
           <Input v-model.trim="form.phone" placeholder="+49 ..." />
         </label>
 
+        <!-- Standardadresse -->
+
         <label>
           Straße
           <Input v-model.trim="form.street" placeholder="Musterstraße 1" />
@@ -138,9 +163,36 @@ async function removeCustomer() {
           <Input v-model.trim="form.city" placeholder="Musterstadt" />
         </label>
 
+        <!-- Rechnungsadresse -->
+        <label class="inline">
+          <input v-model="hasBilling" type="checkbox" />
+          <span>Abweichende Rechnungsadresse</span>
+        </label>
+
+        <div v-if="hasBilling" class="billing-block">
+          <label>
+            Straße (Rechnung)
+            <Input v-model.trim="form.billingStreet" placeholder="Musterstraße 5" />
+          </label>
+
+          <label>
+            PLZ (Rechnung)
+            <Input v-model.trim="form.billingZip" placeholder="12345" />
+          </label>
+
+          <label>
+            Ort (Rechnung)
+            <Input v-model.trim="form.billingCity" placeholder="Musterstadt" />
+          </label>
+        </div>
+
         <label>
           Notizen
-          <Textarea v-model.trim="form.notes" rows="4" placeholder="Besondere Hinweise..." />
+          <Textarea
+            v-model.trim="form.notes"
+            rows="4"
+            placeholder="Besondere Hinweise..."
+          />
         </label>
 
         <div v-if="error" style="color:#b00020;margin-top:.25rem">
@@ -186,6 +238,27 @@ async function removeCustomer() {
 label {
   display: grid;
   gap: .3rem;
+}
+
+h3 {
+  margin-top: .5rem;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin-top: .25rem;
+}
+
+.billing-block {
+  display: grid;
+  gap: .5rem;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .row {

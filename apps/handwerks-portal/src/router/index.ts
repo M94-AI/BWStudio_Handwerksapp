@@ -44,9 +44,12 @@ const router = createRouter({
 
         // Kunden
         { path: 'kunden', name: 'customers-list', component: () => import('@/features/kunden/CustomerListView.vue') },
+        { path: "kunden/neu", name: "customers-new", component: () => import('@/features/kunden/CustomerFormView.vue') },
         { path: 'kunden/:id', name: 'customers-detail', component: () => import('@/features/kunden/CustomerDetailView.vue') },
         { path: "kunden/:id/bearbeiten", name: "customer-edit", component: () => import('@/features/kunden/CustomerFormView.vue') },
+
       ],
+
     },
     { path: '/login', name: 'login', component: () => import('@/features/auth/LoginView.vue') },
   ],

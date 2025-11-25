@@ -67,6 +67,22 @@
       "status": "offen",
       "due": "2025-10-20",
       "notes": ""
+    },
+    {
+      "id": "afc6",
+      "customerId": 42,
+      "title": "Rohrbruch",
+      "status": "offen",
+      "due": "",
+      "notes": ""
+    },
+    {
+      "customerId": 42,
+      "title": "Beispielauftrag",
+      "status": "offen",
+      "due": "2025-11-26",
+      "notes": "",
+      "id": "0702"
     }
   ],
   "invoices": [
