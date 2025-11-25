@@ -8,28 +8,6 @@
 - Modularer Aufbau mit Feature-basiertem Ordnersystem (`/features/auftraege`, `/features/lager`, …)
 
 
-Projektstruktur
-
-handwerksprojekt/
-│
-├── apps/
-│   └── handwerks-portal/        # Frontend (Vue 3 + TS)
-│       ├── src/
-│       │   ├── components/      # Wiederverwendbare UI-Komponenten
-│       │   ├── features/        # Hauptmodule: Aufträge, Lager, Rechnungen, Kunden, Termine …
-│       │   ├── services/        # API-Logik (z. B. /services/inventory.ts)
-│       │   ├── stores/          # Pinia Stores (z. B. /stores/inventory.ts)
-│       │   └── router/          # Vue Router
-│       ├── mock/db.json         # Lokale Mock-Daten
-│       └── .env.local.example   # Beispiel-Umgebungsvariablen fürs Frontend
-│
-├── backend/
-│   └── app/                     # FastAPI-Anwendung (Work in Progress)
-│
-├── docker-compose.yml           # Lokale Container-Orchestrierung
-├── .env.example                 # Beispiel .env für Backend / Root
-└── README.md
-
 
 # EINRICHTUNG
 
